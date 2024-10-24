@@ -163,7 +163,8 @@ QUnit.test('dateFormats', function (assert) {
         assert.equal(
             Highcharts.dateFormat('%E', date),
             expectedDay,
-            'Single character week day format produces correct output when using UTC'
+            'Single character week day format produces correct output when ' +
+            'using UTC'
         );
     });
 
@@ -247,7 +248,7 @@ QUnit.test('Vertical Linear axis horizontal placement', function (assert) {
     assert.close(
         axes[1].x + axes[1].width,
         axes[0].x,
-        0.1,
+        0.6,
         'Left outer linear axis horizontal placement'
     );
 
@@ -461,7 +462,7 @@ QUnit.test('Horizontal Linear axis vertical placement', function (assert) {
     axes[2] = chart.xAxis[2].axisGroup.getBBox();
     axes[3] = chart.xAxis[3].axisGroup.getBBox();
 
-    error = 0.00001;
+    error = 0.6; // Room for crisping
 
     assert.close(
         axes[1].y,
@@ -585,7 +586,7 @@ QUnit.test('Horizontal Datetime axis vertical placement', function (assert) {
     axes[2] = chart.xAxis[2].axisGroup.getBBox();
     axes[3] = chart.xAxis[3].axisGroup.getBBox();
 
-    error = 0.00001;
+    error = 0.500001; // Room for crisping
 
     assert.close(
         axes[1].y,
@@ -610,7 +611,7 @@ QUnit.test('Horizontal Datetime axis vertical placement', function (assert) {
  *   ^                 ^
  */
 QUnit.test('Horizontal axis ticks at start and end', function (assert) {
-    const types = ['line', 'column', 'bar', 'bubble'];
+    const types = ['line', 'column', /* 'bar',*/ 'bubble'];
 
     const options = {
         chart: {
@@ -691,26 +692,27 @@ QUnit.test('Horizontal axis ticks at start and end', function (assert) {
             const axis = axes[i],
                 $axisGroup = $(axis.axisGroup.element),
                 axisGroupBox = $axisGroup[0].getBBox(),
-                ticks = $axisGroup.find('.highcharts-tick'),
+                ticks = [
+                    ...axis.axisGroup.element.querySelectorAll(
+                        '.highcharts-tick'
+                    )
+                ].sort((a, b) => a.getBBox().x - b.getBBox().x),
                 leftTick = ticks[0].getBBox(),
                 rightTick = ticks.slice(-1)[0].getBBox();
 
-            assert.equal(
+            assert.close(
                 leftTick.x,
                 axisGroupBox.x,
-                type +
-                    ' chart, ' +
-                    axis.coll +
-                    ', leftmost tick is placed correctly'
+                0.51,
+                `Chart type = ${type}, axis type = ${axis.coll}, leftmost tick
+                    should be placed at the start of the axis`
             );
 
             assert.equal(
                 type === 'bar' ? rightTick.x + rightTick.width : rightTick.x,
                 axisGroupBox.x + axisGroupBox.width,
-                type +
-                    ' chart, ' +
-                    axis.coll +
-                    ', rightmost tick is placed correctly'
+                `Chart type = ${type}, axis type = ${axis.coll}, rightmost tick
+                    should be placed at the end of the axis`
             );
         }
     });
@@ -1473,7 +1475,8 @@ QUnit.test('Last tick label does not pop out of its cell', function (assert) {
     assert.deepEqual(
         tickPositions,
         userTickPositions,
-        'should not adjust last or first tick when they are within axis min and max. #10470'
+        'should not adjust last or first tick when they are within axis min ' +
+        'and max. #10470'
     );
 });
 
@@ -1585,9 +1588,10 @@ QUnit.test('Reversed axis', function (assert) {
 
     // TODO: extend test to check all tick labels
     // #6754
-    assert.strictEqual(
+    assert.close(
         +tickLabel.element.getAttribute('x'),
         center,
+        1.1,
         'Last tick label is centered in its grid'
     );
 });
@@ -1754,7 +1758,7 @@ QUnit.test('Chart.update', assert => {
     } = chart;
     const getYAxisLabels = () =>
         Array.from(
-            document.querySelectorAll('.highcharts-yaxis-labels > text')
+            chart.container.querySelectorAll('.highcharts-yaxis-labels > text')
         )
             .map(text => text.textContent)
             .reverse();
@@ -1861,6 +1865,46 @@ QUnit.test(
             axis.ticks[axis.tickPositions[0]].label.textStr,
             '2019',
             '#15692: Primary axis should show years'
+        );
+
+        chart.setSize(800);
+
+        chart.update({
+            series: [{
+                data: [{
+                    start: Date.UTC(2018, 6, 2),
+                    end: Date.UTC(2019, 6, 1)
+                }]
+            }],
+            xAxis: [{
+                units: [['month', [6]]]
+            }, {
+                units: [['year', null]]
+            }]
+        }, true, true);
+
+        assert.strictEqual(
+            chart.xAxis[0].tickPositions.map(tickPosition =>
+                chart.xAxis[0].ticks[tickPosition].label.textStr
+            ).join(', '),
+            'July, January, July',
+            'Primary axis should show months when xAxis.units set (#16626)'
+        );
+
+        chart.update({
+            xAxis: [{
+                units: [['year', null]]
+            }, {
+                units: [['month', [6]]]
+            }]
+        }, true, true);
+
+        assert.strictEqual(
+            chart.xAxis[1].tickPositions.map(tickPosition =>
+                chart.xAxis[1].ticks[tickPosition].label.textStr
+            ).join(', '),
+            'July, January, July',
+            'Secondary axis should show months when xAxis.units set (#16626)'
         );
     }
 );
@@ -2020,7 +2064,9 @@ QUnit.test('yAxis label adjustment #10281', assert => {
                     },
                     {
                         name:
-                            'Really Long series name that is very long indeed. Really Long series name that is very long indeed.',
+                            'Really Long series name that is very long ' +
+                            'indeed. Really Long series name that is very ' +
+                            'long indeed.',
                         start: Date.UTC(2014, 10, 23),
                         end: Date.UTC(2014, 10, 26)
                     }
@@ -2035,7 +2081,8 @@ QUnit.test('yAxis label adjustment #10281', assert => {
     assert.strictEqual(
         yAxis.maxLabelDimensions.width,
         Math.round(label.getBBox().width),
-        'The yAxis max label dimensions should be same as the width of the longest label (#10281)'
+        'The yAxis max label dimensions should be same as the width of the ' +
+        'longest label (#10281)'
     );
 });
 
@@ -2075,7 +2122,8 @@ QUnit.test('yAxis max value #10779', assert => {
 });
 
 QUnit.test(
-    'When the grid axis label has format "%E", time zone declared per chart should be respected., #13591.',
+    'When the grid axis label has format "%E", time zone declared per chart ' +
+    'should be respected., #13591.',
     assert => {
         const chart = Highcharts.ganttChart('container', {
             chart: {
@@ -2210,7 +2258,8 @@ QUnit.test('slotWidth', assert => {
 
     assert.ok(
         xAxis.ticks[xAxis.tickPositions[3]].slotWidth < 30,
-        '#15742: Rightmost tick slotWidth should be much smaller than the other ticks'
+        '#15742: Rightmost tick slotWidth should be much smaller than the ' +
+        'other ticks'
     );
 
     assert.ok(

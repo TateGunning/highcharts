@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2023 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -20,6 +20,8 @@ import type Axis from './Axis';
 import type ScrollbarType from '../../Stock/Scrollbar/Scrollbar';
 import type ScrollbarOptions from '../../Stock/Scrollbar/ScrollbarOptions';
 
+import H from '../Globals.js';
+const { composed } = H;
 import U from '../Utilities.js';
 const {
     addEvent,
@@ -59,26 +61,18 @@ interface ScrollbarAxis extends Axis {
 namespace ScrollbarAxis {
 
     /* *
-    *
-    *  Constants
-    *
-    * */
-
-    const composedMembers: Array<unknown> = [];
-
-    /* *
-    *
-    *  Variables
-    *
-    * */
+     *
+     *  Variables
+     *
+     * */
 
     let Scrollbar: typeof ScrollbarType;
 
     /* *
-    *
-    *  Functions
-    *
-    * */
+     *
+     *  Functions
+     *
+     * */
 
     /**
      * Attaches to axis events to create scrollbars if enabled.
@@ -96,11 +90,9 @@ namespace ScrollbarAxis {
         ScrollbarClass: typeof ScrollbarType
     ): void {
 
-        if (pushUnique(composedMembers, ScrollbarClass)) {
+        if (pushUnique(composed, 'Axis.Scrollbar')) {
             Scrollbar = ScrollbarClass;
-        }
 
-        if (pushUnique(composedMembers, AxisClass)) {
             addEvent(AxisClass, 'afterGetOffset', onAxisAfterGetOffset);
             addEvent(AxisClass, 'afterInit', onAxisAfterInit);
             addEvent(AxisClass, 'afterRender', onAxisAfterRender);
@@ -230,7 +222,7 @@ namespace ScrollbarAxis {
                     );
                 } else {
                     // When live redraw is disabled, don't change extremes
-                    // Only change the position of the scollbar thumb
+                    // Only change the position of the scrollbar thumb
                     this.setRange(this.from as any, this.to as any);
                 }
             });
@@ -329,12 +321,26 @@ namespace ScrollbarAxis {
                 isNaN(scrollMax) ||
                 !defined(axis.min) ||
                 !defined(axis.max) ||
-                axis.min === axis.max // #10733
+                axis.dataMin === axis.dataMax // #10733
             ) {
-                // Default action: when extremes are the same or there is
+                // Default action: when data extremes are the same or there is
                 // not extremes on the axis, but scrollbar exists, make it
                 // full size
+
                 scrollbar.setRange(0, 1);
+            } else if (axis.min === axis.max) { // #20359
+                // When the extremes are the same, set the scrollbar to a point
+                // within the extremes range. Utilize pointRange to perform the
+                // calculations. (#20359)
+
+                const interval: number = axis.pointRange / (
+                    axis.dataMax as number +
+                    1
+                );
+                from = interval * axis.min;
+                to = interval * (axis.max + 1);
+
+                scrollbar.setRange(from, to);
             } else {
                 from = (
                     ((axis.min as any) - scrollMin) /

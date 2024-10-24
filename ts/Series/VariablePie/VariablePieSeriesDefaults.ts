@@ -2,7 +2,7 @@
  *
  *  Variable Pie module for Highcharts
  *
- *  (c) 2010-2021 Grzegorz Blachliński
+ *  (c) 2010-2024 Grzegorz Blachliński
  *
  *  License: www.highcharts.com/license
  *
@@ -39,7 +39,7 @@ import type VariablePieSeriesOptions from './VariablePieSeriesOptions';
  * @excluding    dragDrop
  * @since        6.0.0
  * @product      highcharts
- * @requires     modules/variable-pie.js
+ * @requires     modules/variable-pie
  * @optionparent plotOptions.variablepie
  */
 const VariablePieSeriesDefaults: VariablePieSeriesOptions = {
@@ -127,7 +127,7 @@ const VariablePieSeriesDefaults: VariablePieSeriesOptions = {
  * @excluding dataParser, dataURL, stack, xAxis, yAxis, dataSorting,
  *            boostThreshold, boostBlending
  * @product   highcharts
- * @requires  modules/variable-pie.js
+ * @requires  modules/variable-pie
  * @apioption series.variablepie
  */
 
@@ -180,7 +180,7 @@ const VariablePieSeriesDefaults: VariablePieSeriesOptions = {
  * @apioption series.variablepie.data
  */
 
-''; // keeps doclets above separate
+''; // Keeps doclets above separate
 
 /* *
  *

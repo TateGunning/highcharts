@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -43,6 +43,7 @@ const EditGlobals: EditGlobals = {
         editSidebar: PREFIX + 'sidebar',
         editSidebarShow: PREFIX + 'sidebar-show',
         editSidebarHide: PREFIX + 'sidebar-hide',
+        editSidebarHeader: PREFIX + 'sidebar-header',
         editSidebarTitle: PREFIX + 'sidebar-title',
         editSidebarMenuItem: PREFIX + 'sidebar-item',
         rowContextHighlight: PREFIX + 'row-context-highlight',
@@ -105,6 +106,7 @@ const EditGlobals: EditGlobals = {
         accordionMenuButton: PREFIX + 'accordion-menu-button',
         hiddenElement: PREFIX + 'hidden-element',
         collapsableContentHeader: PREFIX + 'collapsable-content-header',
+        standaloneElement: PREFIX + 'standalone-element',
 
         // Custom dropdown with icons
         collapsedElement: PREFIX + 'collapsed-element',
@@ -136,21 +138,27 @@ const EditGlobals: EditGlobals = {
         confirmButton: 'Confirm',
         confirmDestroyCell: 'Do you really want to destroy the cell?',
         confirmDestroyRow: 'Do you really want to destroy the row?',
+        confirmDiscardChanges: 'Do you really want to discard the changes?',
         dataLabels: 'Data labels',
         editMode: 'Edit mode',
         errorMessage: 'Something went wrong',
         exitFullscreen: 'Exit full screen',
+        htmlInput: 'HTML',
         id: 'Id',
-        large: 'Large',
-        medium: 'Medium',
         off: 'off',
         on: 'on',
         pointFormat: 'Point format',
         settings: 'Settings',
-        small: 'Small',
         style: 'Styles',
         title: 'Title',
-        viewFullscreen: 'View in full screen'
+        viewFullscreen: 'View in full screen',
+        sidebar: {
+            HTML: 'HTML',
+            row: 'Row',
+            Highcharts: 'Highcharts',
+            DataGrid: 'DataGrid',
+            KPI: 'KPI'
+        }
     }
 };
 
@@ -199,6 +207,7 @@ namespace EditGlobals {
         editOverlayActive: string;
         editSidebar: string;
         editSidebarHide: string;
+        editSidebarHeader: string;
         editSidebarMenuItem: string;
         editSidebarRight: string;
         editSidebarRightShow: string;
@@ -239,6 +248,7 @@ namespace EditGlobals {
         separator: string;
         sidebarCloseButton: string;
         sidebarNavButton: string;
+        standaloneElement: string;
         toggleContainer: string;
         toggleLabels: string;
         toggleSlider: string;
@@ -301,6 +311,10 @@ namespace EditGlobals {
          */
         confirmDestroyRow: string;
         /**
+         * @default 'Do you really want to discard the changes?'
+         */
+        confirmDiscardChanges: string;
+        /**
          * @default 'Data labels'
          */
         dataLabels: string;
@@ -321,14 +335,6 @@ namespace EditGlobals {
          */
         id: string;
         /**
-         * @default 'Large'
-         */
-        large: string;
-        /**
-         * @default 'Medium'
-         */
-        medium: string;
-        /**
          * @default 'off'
          */
         off: string;
@@ -345,9 +351,9 @@ namespace EditGlobals {
          */
         settings: string;
         /**
-         * @default 'Small'
+         * Options for the sidebar and its components.
          */
-        small: string;
+        sidebar:SidebarLangOptions
         /**
          * @default 'Styles'
          */
@@ -361,6 +367,30 @@ namespace EditGlobals {
          */
         viewFullscreen: string;
         [key: string]: any;
+    }
+
+    export interface SidebarLangOptions {
+        [key: string]: string;
+        /**
+         * @default 'HTML'
+         */
+        HTML: string;
+        /**
+         * @default 'Row'
+         */
+        row: string;
+        /**
+         * @default 'Highcharts'
+         */
+        Highcharts: string;
+        /**
+         * @default 'DataGrid'
+         */
+        DataGrid: string;
+        /**
+         * @default 'KPI'
+         */
+        KPI: string;
     }
 
     export interface LangAccessibilityOptions {

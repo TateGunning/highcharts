@@ -2,7 +2,7 @@
  *
  *  X-range series module
  *
- *  (c) 2010-2021 Torstein Honsi, Lars A. V. Cabrera
+ *  (c) 2010-2024 Torstein Honsi, Lars A. V. Cabrera
  *
  *  License: www.highcharts.com/license
  *
@@ -30,7 +30,10 @@ import type XRangeSeriesOptions from './XRangeSeriesOptions';
 import type SVGAttributes from '../../Core/Renderer/SVG/SVGAttributes';
 
 import H from '../../Core/Globals.js';
-const { noop } = H;
+const {
+    composed,
+    noop
+} = H;
 import Color from '../../Core/Color/Color.js';
 const { parse: color } = Color;
 import SeriesRegistry from '../../Core/Series/SeriesRegistry.js';
@@ -41,6 +44,7 @@ import U from '../../Core/Utilities.js';
 const {
     addEvent,
     clamp,
+    crisp,
     defined,
     extend,
     find,
@@ -48,18 +52,11 @@ const {
     isObject,
     merge,
     pick,
+    pushUnique,
     relativeLength
 } = U;
 import XRangeSeriesDefaults from './XRangeSeriesDefaults.js';
 import XRangePoint from './XRangePoint.js';
-
-/* *
- *
- *  Constants
- *
- * */
-
-const composedMembers: Array<unknown> = [];
 
 /* *
  *
@@ -132,7 +129,7 @@ class XRangeSeries extends ColumnSeries {
         AxisClass: typeof Axis
     ): void {
 
-        if (U.pushUnique(composedMembers, AxisClass)) {
+        if (pushUnique(composed, 'Series.XRange')) {
             addEvent(
                 AxisClass,
                 'afterGetSeriesExtremes',
@@ -148,9 +145,9 @@ class XRangeSeries extends ColumnSeries {
      *
      * */
 
-    public data: Array<XRangePoint> = void 0 as any;
-    public options: XRangeSeriesOptions = void 0 as any;
-    public points: Array<XRangePoint> = void 0 as any;
+    public data!: Array<XRangePoint>;
+    public options!: XRangeSeriesOptions;
+    public points!: Array<XRangePoint>;
 
     /* *
      *
@@ -263,6 +260,13 @@ class XRangeSeries extends ColumnSeries {
     public alignDataLabel(point: XRangePoint): void {
         const oldPlotX = point.plotX;
         point.plotX = pick(point.dlBox && point.dlBox.centerX, point.plotX);
+
+        if (point.dataLabel && point.shapeArgs?.width) {
+            point.dataLabel.css({
+                width: `${point.shapeArgs.width}px`
+            });
+        }
+
         super.alignDataLabel.apply(this, arguments);
         point.plotX = oldPlotX;
     }
@@ -295,8 +299,7 @@ class XRangeSeries extends ColumnSeries {
 
         const length = Math.abs((plotX2 as any) - (plotX as any)),
             inverted = this.chart.inverted,
-            borderWidth = pick(options.borderWidth, 1),
-            crisper = borderWidth % 2 / 2;
+            borderWidth = pick(options.borderWidth, 1);
 
         let widthDifference,
             partialFill: (
@@ -337,7 +340,8 @@ class XRangeSeries extends ColumnSeries {
             yAxis.categories
         ) {
             point.plotY = yAxis.translate(
-                (point.y as any),
+                (
+                    point.y as any),
                 0 as any,
                 1 as any,
                 0 as any,
@@ -346,14 +350,14 @@ class XRangeSeries extends ColumnSeries {
             );
         }
 
-        const x = Math.floor(Math.min(plotX, plotX2)) + crisper,
-            x2 = Math.floor(Math.max(plotX, plotX2)) + crisper,
+        const x = crisp(Math.min(plotX, plotX2), borderWidth),
+            x2 = crisp(Math.max(plotX, plotX2), borderWidth),
             width = x2 - x;
 
         const r = Math.min(
             relativeLength((
                 typeof borderRadius === 'object' ?
-                    borderRadius.radius :
+                    (borderRadius as any).radius :
                     borderRadius || 0
             ), pointHeight),
             Math.min(width, pointHeight) / 2
@@ -361,7 +365,7 @@ class XRangeSeries extends ColumnSeries {
 
         const shapeArgs = {
             x,
-            y: Math.floor((point.plotY as any) + yOffset) + crisper,
+            y: crisp((point.plotY || 0) + yOffset, borderWidth),
             width,
             height: pointHeight,
             r
@@ -513,7 +517,7 @@ class XRangeSeries extends ColumnSeries {
         if (!point.isNull && point.visible !== false) {
 
             // Original graphic
-            if (graphic) { // update
+            if (graphic) { // Update
                 graphic.rect[verb](shapeArgs);
             } else {
                 point.graphic = graphic = renderer.g('point')

@@ -12,8 +12,8 @@
 
 
 const AWS = require('@aws-sdk/client-s3');
-const { fromEnv, fromIni } = require('@aws-sdk/credential-providers');
-const FS = require('node:fs/promises');
+const { fromIni } = require('@aws-sdk/credential-providers');
+const FS = require('node:fs');
 const Path = require('node:path/posix');
 
 /* *
@@ -109,7 +109,7 @@ async function deleteS3Object(
     session
 ) {
     if (session.dryrun) {
-        const fsLib = require('./fs');
+        const fsLib = require('../../libs/fs');
 
         path = Path.join(
             'tmp',
@@ -218,8 +218,7 @@ async function getS3LastModified(
         response = await region.listObjectsV2({
             Bucket: bucket,
             ContinuationToken: continueToken,
-            StartAfter: pathPrefix
-
+            Prefix: pathPrefix
         });
 
         if (response.Contents) {
@@ -264,8 +263,8 @@ async function putS3Object(
     options = {},
     session = defaultSession
 ) {
-    if (session.dryrun) {
-        const fsLib = require('./fs');
+    if (session && session.dryrun) {
+        const fsLib = require('../../libs/fs');
 
         path = Path.join('tmp', 's3', session.bucket, path);
 
@@ -366,9 +365,9 @@ async function synchronizeDirectory(
     session = defaultSession,
     filterCallback = void 0
 ) {
-    const fsLib = require('./fs');
+    const fsLib = require('../../libs/fs');
     const glob = require('glob');
-    const log = require('./log');
+    const log = require('../../libs/log');
 
     log.warn(`Start synchronization of "${sourcePath}"...`);
 
@@ -385,7 +384,10 @@ async function synchronizeDirectory(
         const chunkPromises = [];
 
         for (const fileKey of fileKeysChunk) {
-            const filePath = Path.join(sourcePath, fileKey);
+            const filePath = Path.join(
+                sourcePath,
+                Path.relative(targetPathPrefix, fileKey)
+            );
 
             // skip versioned files
             if (fileKey.match(versionPattern)) {
@@ -393,12 +395,9 @@ async function synchronizeDirectory(
             }
 
             if (!FS.existsSync(filePath)) {
-                chunkPromises.push(deleteS3Object(filePath, session));
-            }
-
-            if (
-                fileModificationTimes[fileKey] <
-                FS.lstatSync(filePath).mtime
+                chunkPromises.push(deleteS3Object(fileKey, session));
+            } else if (
+                fileModificationTimes[fileKey] < FS.lstatSync(filePath).mtime
             ) {
                 chunkPromises.push(
                     uploadFile(
@@ -469,7 +468,10 @@ async function synchronizeDirectory(
 function toS3Path(fromPath, removeFromDestPath, prefix) {
     return {
         from: fromPath,
-        to: Path.join(prefix || '', Path.relative(removeFromDestPath, fromPath))
+        to: Path.join(
+            prefix || '',
+            Path.relative(removeFromDestPath || '', fromPath)
+        )
     };
 }
 
@@ -498,9 +500,9 @@ async function uploadDirectory(
     session = defaultSession,
     filterCallback = void 0
 ) {
-    const fsLib = require('./fs');
+    const fsLib = require('../../libs/fs');
     const glob = require('glob');
-    const log = require('./log');
+    const log = require('../../libs/log');
 
     log.warn(`Start upload of "${sourcePath}"...`);
 
@@ -563,22 +565,22 @@ async function uploadFile(
     filterCallback = void 0,
     s3Params = {}
 ) {
-    const log = require('./log');
+    const log = require('../../libs/log');
 
-    let fileContent = await FS.readFile(sourcePath);
+    let fileContent = FS.readFileSync(sourcePath);
 
     if (filterCallback) {
         fileContent = filterCallback(sourcePath, fileContent);
     }
 
     if (session.dryrun) {
-        const fsLib = require('./fs');
+        const fsLib = require('../../libs/fs');
 
         targetPath = Path.join('tmp', 's3', session.bucket, targetPath);
 
         fsLib.makePath(Path.dirname(targetPath));
 
-        await FS.writeFile(targetPath, fileContent, { encoding: 'binary' });
+        FS.writeFileSync(targetPath, fileContent, { encoding: 'binary' });
 
         log.message(targetPath, 'would be uploaded');
     } else {
@@ -657,8 +659,12 @@ function getVersionPaths(version) {
  * Promise to keep
  */
 async function uploadFiles(params) {
-    const log = require('./log');
-    const { files, name, bucket, s3Params } = params;
+    const log = require('../../libs/log');
+    const { files, name, bucket, s3Params, region } = params;
+
+    const stagingBuckets = [
+        'staging-code.highcharts.com'
+    ];
 
     params = Object.assign(
         {
@@ -670,7 +676,9 @@ async function uploadFiles(params) {
             callback: (from, to) => {
                 log.message(`Uploaded ${from} --> ${to}`);
             },
-            region: 'eu-west-1'
+            region: region || stagingBuckets.includes(bucket) ?
+                'eu-central-1' :
+                'eu-west-1'
         },
         params
     );

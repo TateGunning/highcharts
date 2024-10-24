@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2021 Torstein Honsi
+ *  (c) 2009-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -125,7 +125,9 @@ const SeriesLabelDefaults: SeriesLabelOptions = {
      * @type {Highcharts.CSSObject}
      */
     style: {
-        /** @internal */
+        /**
+         * @type {number|string}
+         */
         fontSize: '0.8em',
         /** @internal */
         fontWeight: 'bold'

@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2014-2021 Highsoft AS
+ *  (c) 2014-2024 Highsoft AS
  *
  *  Authors: Jon Arild Nygard / Oystein Moseng
  *
@@ -32,6 +32,7 @@ import type SVGElement from '../../Core/Renderer/SVG/SVGElement';
 import type SVGLabel from '../../Core/Renderer/SVG/SVGLabel';
 import type {
     TreemapSeriesLayoutAlgorithmValue,
+    TreemapSeriesLevelOptions,
     TreemapSeriesOptions
 } from './TreemapSeriesOptions';
 
@@ -40,7 +41,10 @@ import Color from '../../Core/Color/Color.js';
 const { parse: color } = Color;
 import ColorMapComposition from '../ColorMapComposition.js';
 import H from '../../Core/Globals.js';
-const { noop } = H;
+const {
+    composed,
+    noop
+} = H;
 import SeriesRegistry from '../../Core/Series/SeriesRegistry.js';
 const {
     column: ColumnSeries,
@@ -61,12 +65,12 @@ import U from '../../Core/Utilities.js';
 const {
     addEvent,
     correctFloat,
+    crisp,
     defined,
     error,
     extend,
     fireEvent,
     isArray,
-    isNumber,
     isObject,
     isString,
     merge,
@@ -77,23 +81,11 @@ const {
 
 /* *
  *
- *  Declarations
- *
- * */
-
-interface TreemapRecursiveCallbackFunction<TContext = any, TItem = any> {
-    (this: TContext, item: TItem): (boolean|TItem);
-}
-
-/* *
- *
  *  Constants
  *
  * */
 
 const axisMax = 100;
-
-const composedMembers: Array<unknown> = [];
 
 /* *
  *
@@ -126,10 +118,8 @@ function onSeriesAfterBindAxes(
                 gridLineWidth: 0,
                 lineWidth: 0,
                 min: 0,
-                // dataMin: 0,
                 minPadding: 0,
                 max: axisMax,
-                // dataMax: TreemapUtilities.AXIS_MAX,
                 maxPadding: 0,
                 startOnTick: false,
                 title: void 0,
@@ -184,7 +174,7 @@ class TreemapSeries extends ScatterSeries {
         SeriesClass: typeof Series
     ): void {
 
-        if (pushUnique(composedMembers, SeriesClass)) {
+        if (pushUnique(composed, 'TreemapSeries')) {
             addEvent(SeriesClass, 'afterBindAxes', onSeriesAfterBindAxes);
         }
 
@@ -196,33 +186,33 @@ class TreemapSeries extends ScatterSeries {
      *
      * */
 
-    public axisRatio: number = void 0 as any;
+    public axisRatio!: number;
 
     public colorValueData?: Array<number>;
 
     public colorAxis?: ColorAxisComposition.SeriesComposition['colorAxis'];
 
-    public data: Array<TreemapPoint> = void 0 as any;
+    public data!: Array<TreemapPoint>;
 
     public drillUpButton?: SVGElement;
 
     public idPreviousRoot?: string;
 
-    public mapOptionsToLevel: Record<string, TreemapSeriesOptions> = void 0 as any;
+    public mapOptionsToLevel!: Record<string, TreemapSeriesLevelOptions>;
 
-    public nodeMap: Record<string, TreemapNode> = void 0 as any;
+    public nodeMap!: Record<string, TreemapNode>;
 
-    public nodeList: TreemapNode[] = void 0 as any;
+    public nodeList!: TreemapNode[];
 
-    public options: TreemapSeriesOptions = void 0 as any;
+    public options!: TreemapSeriesOptions;
 
-    public points: Array<TreemapPoint> = void 0 as any;
+    public points!: Array<TreemapPoint>;
 
-    public rootNode: string = void 0 as any;
+    public rootNode!: string;
 
-    public tree: TreemapNode = void 0 as any;
+    public tree!: TreemapNode;
 
-    public level?: number = void 0 as any;
+    public level?: number;
 
     /* *
      *
@@ -426,13 +416,13 @@ class TreemapSeries extends ScatterSeries {
         ) {
             dataLabel.css({
                 textOverflow: 'ellipsis',
-                // unit (px) is required when useHTML is true
+                // Unit (px) is required when useHTML is true
                 width: style.width += 'px'
             });
         }
         ColumnSeries.prototype.alignDataLabel.apply(this, arguments);
         if (point.dataLabel) {
-        // point.node.zIndex could be undefined (#6956)
+            // `point.node.zIndex` could be undefined (#6956)
             point.dataLabel.attr({ zIndex: (point.node.zIndex || 0) + 1 });
         }
     }
@@ -571,7 +561,7 @@ class TreemapSeries extends ScatterSeries {
             });
 
         let options: DataLabelOptions,
-            level: TreemapSeriesOptions;
+            level: TreemapSeriesLevelOptions;
 
         for (const point of points) {
             level = mapOptionsToLevel[point.node.level];
@@ -723,17 +713,26 @@ class TreemapSeries extends ScatterSeries {
      * @private
      */
     public drillToByLeaf(point: TreemapPoint): (boolean|string) {
+        const { traverseToLeaf } = point.series.options;
+
         let drillId: (boolean|string) = false,
             nodeParent: TreemapNode;
 
-        if ((point.node.parent !== this.rootNode) &&
+        if (
+            (point.node.parent !== this.rootNode) &&
             point.node.isLeaf
         ) {
-            nodeParent = point.node;
-            while (!drillId) {
-                nodeParent = this.nodeMap[nodeParent.parent as any];
-                if (nodeParent.parent === this.rootNode) {
-                    drillId = nodeParent.id;
+            if (traverseToLeaf) {
+                drillId = point.id;
+            } else {
+                nodeParent = point.node;
+                while (!drillId) {
+                    if (typeof nodeParent.parent !== 'undefined') {
+                        nodeParent = this.nodeMap[nodeParent.parent];
+                    }
+                    if (nodeParent.parent === this.rootNode) {
+                        drillId = nodeParent.id;
+                    }
                 }
             }
         }
@@ -971,6 +970,7 @@ class TreemapSeries extends ScatterSeries {
                 addEvent(
                     series,
                     'update',
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     function (e: any, redraw?: boolean): void {
                         const breadcrumbs = this.chart.breadcrumbs;
 
@@ -981,7 +981,8 @@ class TreemapSeries extends ScatterSeries {
             );
 
             series.eventsToUnbind.push(
-                addEvent(series, 'destroy',
+                addEvent(
+                    series, 'destroy',
                     function destroyEvents(e: any): void {
                         const chart = this.chart;
                         if (chart.breadcrumbs && !e.keepEventsForUpdate) {
@@ -1158,10 +1159,10 @@ class TreemapSeries extends ScatterSeries {
         // using point.graphic.strokeWidth(), then modify and apply the
         // shapeArgs. This applies also to column series, but the
         // downside is performance and code complexity.
-        const getCrispCorrection = (point: TreemapPoint): number => (
+        const getStrokeWidth = (point: TreemapPoint): number => (
             styledMode ?
                 0 :
-                ((series.pointAttribs(point)['stroke-width'] || 0) % 2) / 2
+                (series.pointAttribs(point)['stroke-width'] || 0)
         );
 
         for (const point of points) {
@@ -1170,15 +1171,19 @@ class TreemapSeries extends ScatterSeries {
             // Points which is ignored, have no values.
             if (values && visible) {
                 const { height, width, x, y } = values;
-                const crispCorr = getCrispCorrection(point);
-                const x1 = Math.round(xAxis.toPixels(x, true)) - crispCorr;
-                const x2 = Math.round(
-                    xAxis.toPixels(x + width, true)
-                ) - crispCorr;
-                const y1 = Math.round(yAxis.toPixels(y, true)) - crispCorr;
-                const y2 = Math.round(
-                    yAxis.toPixels(y + height, true)
-                ) - crispCorr;
+                const strokeWidth = getStrokeWidth(point);
+                const x1 = crisp(xAxis.toPixels(x, true), strokeWidth, true);
+                const x2 = crisp(
+                    xAxis.toPixels(x + width, true),
+                    strokeWidth,
+                    true
+                );
+                const y1 = crisp(yAxis.toPixels(y, true), strokeWidth, true);
+                const y2 = crisp(
+                    yAxis.toPixels(y + height, true),
+                    strokeWidth,
+                    true
+                );
 
                 // Set point values
                 const shapeArgs = {
@@ -1393,7 +1398,7 @@ class TreemapSeries extends ScatterSeries {
 
         if (
             rootId !== '' &&
-            (!rootNode || !rootNode.children.length)
+            (!rootNode)
         ) {
             series.setRootNode('', false);
             rootId = series.rootNode;

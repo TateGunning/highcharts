@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -676,14 +676,6 @@ namespace StackingAxis {
 
     /* *
      *
-     *  Constants
-     *
-     * */
-
-    const composedMembers: Array<unknown> = [];
-
-    /* *
-     *
      *  Functions
      *
      * */
@@ -697,20 +689,15 @@ namespace StackingAxis {
         ChartClass: typeof Chart,
         SeriesClass: typeof Series
     ): void {
+        const chartProto = ChartClass.prototype,
+            seriesProto = SeriesClass.prototype;
 
-        if (U.pushUnique(composedMembers, AxisClass)) {
+
+        if (!chartProto.getStacks) {
             addEvent(AxisClass, 'init', onAxisInit);
             addEvent(AxisClass, 'destroy', onAxisDestroy);
-        }
-
-        if (U.pushUnique(composedMembers, ChartClass)) {
-            const chartProto = ChartClass.prototype;
 
             chartProto.getStacks = chartGetStacks;
-        }
-
-        if (U.pushUnique(composedMembers, SeriesClass)) {
-            const seriesProto = SeriesClass.prototype;
 
             seriesProto.getStackIndicator = seriesGetStackIndicator;
             seriesProto.modifyStacks = seriesModifyStacks;

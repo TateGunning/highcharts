@@ -1,5 +1,6 @@
 /* eslint func-style:0, object-curly-spacing: 0 */
 (function () {
+    console.time('Utils test time');
     var dateFormat = Highcharts.dateFormat,
         extend = Highcharts.extend,
         numberFormat = Highcharts.numberFormat,
@@ -27,9 +28,7 @@
     QUnit.test('diffObjects', assert => {
 
         // eslint-disable-next-line no-underscore-dangle
-        const diffObjects = Highcharts._modules[
-            'Core/Utilities.js'
-        ].diffObjects;
+        const diffObjects = Highcharts.diffObjects;
 
         let result;
 
@@ -142,38 +141,6 @@
             4,
             countMembers(result)
         );
-    });
-
-    QUnit.test('Merge', assert => {
-
-        // test filtering of __proto__
-        const objProto = JSON.parse(`{
-            "__proto__": {
-                "pollutedByProto": true
-            }
-        }`);
-        Highcharts.merge({}, objProto);
-        assert.strictEqual(
-            typeof pollutedByProto, // eslint-disable-line no-undef
-            'undefined',
-            'The prototype (and window) should not be polluted through merge'
-        );
-
-        // test filtering of constructor
-        const objConstructor = JSON.parse(`{
-            "constructor": {
-                "prototype": {
-                    "pollutedByConstructor": true
-                }
-            }
-        }`);
-        Highcharts.merge({}, objConstructor);
-        assert.strictEqual(
-            typeof {}.pollutedByConstructor, // eslint-disable-line no-undef
-            'undefined',
-            'The prototype (and window) should not be polluted through merge'
-        );
-
     });
 
     QUnit.test('PInt', function (assert) {
@@ -339,7 +306,8 @@
     /**
      * Tests that destroyObjectProperties calls the destroy method on properties
      * before delete.
-     * /
+     */
+    /*
     QUnit.test('DestroyObjectProperties', function (assert) {
         var testObject = {}, // Test object with the properties to destroy
             destroyCount = 0; // Number of destroy calls made
@@ -543,7 +511,8 @@
             dateFormat(
                 '%Y-%m-%d',
                 new Date(
-                    'Sat May 07 2016 20:45:00 GMT+0200 (W. Europe Daylight Time)'
+                    'Sat May 07 2016 20:45:00 GMT+0200 (W. Europe Daylight ' +
+                    'Time)'
                 )
             )
         );
@@ -954,7 +923,8 @@
         assert.strictEqual(
             result,
             7,
-            'initialValue = 1 - should return sum of values in array plus intialValue.'
+            'initialValue = 1 - should return sum of values in array plus ' +
+            'intialValue.'
         );
 
         assert.deepEqual(
@@ -976,4 +946,6 @@
             Object.keys({ foo: 'bar' })
         );
     });
+
+    console.timeEnd('Utils test time');
 }());

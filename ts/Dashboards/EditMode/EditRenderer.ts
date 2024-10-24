@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -137,6 +137,7 @@ function renderCollapseHeader(
         onchange,
         isEnabled,
         isNested,
+        isStandalone,
         lang
     } = options;
 
@@ -160,12 +161,15 @@ function renderCollapseHeader(
         accordion
     );
 
-    const headerBtn = createElement(
-        'button',
-        { className: EditGlobals.classNames.accordionHeaderBtn },
-        {},
-        header
-    );
+    let headerBtn;
+    if (!isStandalone) {
+        headerBtn = createElement(
+            'button',
+            { className: EditGlobals.classNames.accordionHeaderBtn },
+            {},
+            header
+        );
+    }
 
     createElement(
         'span',
@@ -203,13 +207,16 @@ function renderCollapseHeader(
         {
             className:
                 EditGlobals.classNames.accordionContent + ' ' +
-                EditGlobals.classNames.hiddenElement
+                (isStandalone ?
+                    EditGlobals.classNames.standaloneElement :
+                    EditGlobals.classNames.hiddenElement
+                )
         },
         {},
         accordion
     );
 
-    headerBtn.addEventListener('click', function (): void {
+    headerBtn?.addEventListener('click', function (): void {
         content.classList.toggle(EditGlobals.classNames.hiddenElement);
         headerIcon.classList.toggle(EditGlobals.classNames.collapsedElement);
     });
@@ -367,10 +374,8 @@ function renderSelectElement(
         selectOption
     );
 
-    let icon: HTMLElement|undefined;
-
     if (option.iconURL) {
-        icon = createElement(
+        createElement(
             'img',
             {
                 src: iconURL
@@ -746,13 +751,11 @@ function renderButton(
     parentElement: HTMLElement,
     options: ButtonOptions
 ): HTMLElement|undefined {
-    let button;
-
     if (!parentElement) {
         return;
     }
 
-    button = createElement(
+    const button = createElement(
         'button',
         {
             className: (
@@ -879,6 +882,7 @@ export interface ToggleFormFieldOptions {
 export interface NestedHeaderFormFieldOptions {
     name: string;
     showToggle?: boolean;
+    isStandalone?: boolean;
     onchange?: (value: boolean) => void;
     isEnabled?: boolean;
     isNested?: boolean;

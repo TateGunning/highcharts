@@ -1,7 +1,7 @@
 import { readdirSync, existsSync } from 'node:fs';
 import { readdir, mkdir, writeFile, rm, lstat } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
-import { starting, finished, success, warn } from '../../tools/gulptasks/lib/log.js';
+import { starting, finished, success, warn } from '../../tools/libs/log.js';
 
 import { Worker } from 'node:worker_threads';
 import { argv } from 'node:process';
@@ -112,7 +112,7 @@ async function runRest(testFile: string) : Promise<BenchResults>{
     const results = [];
     await mkdir(join(__dirname, 'test-data'), { recursive: true });
 
-    for (const size  of config.sizes) {
+    for (const size of config.sizes) {
         const details: BenchmarkDetails = {
             test: relative(__dirname, testFile),
             sampleSize: size,

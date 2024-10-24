@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2016-2021 Highsoft AS
+ *  (c) 2016-2024 Highsoft AS
  *
  *  Author: Lars A. V. Cabrera
  *
@@ -28,6 +28,7 @@ import type Options from '../Options';
 import Chart from './Chart.js';
 import D from '../Defaults.js';
 const { defaultOptions } = D;
+import { Palette } from '../Color/Palettes.js';
 import U from '../Utilities.js';
 const {
     isArray,
@@ -80,7 +81,7 @@ class GanttChart extends Chart {
      *        Custom options.
      *
      * @param {Function} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
      *
@@ -149,6 +150,7 @@ class GanttChart extends Chart {
                 // Defaults
                 {
                     grid: {
+                        borderColor: Palette.neutralColor20,
                         enabled: true
                     },
                     opposite: defaultOptions.xAxis?.opposite ??
@@ -167,11 +169,12 @@ class GanttChart extends Chart {
 
         // Apply Y axis options to both single and multi y axes
         options.yAxis = (splat(userOptions.yAxis || {})).map((
-            yAxisOptions: YAxisOptions
-        ): YAxisOptions => merge(
+            yAxisOptions
+        ): DeepPartial<YAxisOptions> => merge(
             // Defaults
             {
                 grid: {
+                    borderColor: Palette.neutralColor20,
                     enabled: true
                 },
 
@@ -183,7 +186,7 @@ class GanttChart extends Chart {
                 // undefined
                 type: yAxisOptions.categories ? yAxisOptions.type : 'treegrid'
 
-            } as YAxisOptions,
+            },
             // User options
             yAxisOptions
         ));
@@ -232,7 +235,7 @@ namespace GanttChart {
      *        The chart options structure.
      *
      * @param {Highcharts.ChartCallbackFunction} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded. Defining a
      *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
      *        handler is equivalent.

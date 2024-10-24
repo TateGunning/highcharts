@@ -2,7 +2,7 @@
  *
  *  Timeline Series.
  *
- *  (c) 2010-2021 Highsoft AS
+ *  (c) 2010-2024 Highsoft AS
  *
  *  Author: Daniel Studencki
  *
@@ -13,6 +13,8 @@
  * */
 
 'use strict';
+
+/* eslint @typescript-eslint/no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 
 /* *
  *
@@ -87,15 +89,15 @@ class TimelineSeries extends LineSeries {
      *
      * */
 
-    public data: Array<TimelinePoint> = void 0 as any;
+    public data!: Array<TimelinePoint>;
 
-    public options: TimelineSeriesOptions = void 0 as any;
+    public options!: TimelineSeriesOptions;
 
-    public points: Array<TimelinePoint> = void 0 as any;
+    public points!: Array<TimelinePoint>;
 
-    public userOptions: TimelineSeriesOptions = void 0 as any;
+    public userOptions!: TimelineSeriesOptions;
 
-    public visibilityMap: Array<(boolean|TimelinePoint|TimelinePointOptions)> = void 0 as any;
+    public visibilityMap!: Array<(boolean|TimelinePoint|TimelinePointOptions)>;
 
     public visiblePointsCount?: number;
 
@@ -341,8 +343,8 @@ class TimelineSeries extends LineSeries {
                         // Initialize the targetPosition field within data label
                         // object. It's necessary because there is need to know
                         // expected position of specific data label, when
-                        // aligning connectors. This field is overrided inside
-                        // of SVGElement.animate() wrapped  method.
+                        // aligning connectors. This field is overridden inside
+                        // of SVGElement.animate() wrapped method.
                         if (!dataLabel.targetPosition) {
                             dataLabel.targetPosition = {};
                         }
@@ -435,33 +437,30 @@ class TimelineSeries extends LineSeries {
 
     }
 
-    public processData(): undefined {
-        const series = this;
+}
 
-        let visiblePoints = 0,
-            i: (number|undefined);
+// Add series-specific properties after data is already processed, #17890
+addEvent(TimelineSeries, 'afterProcessData', function (): void {
+    const series = this;
 
-        series.visibilityMap = series.getVisibilityMap();
+    let visiblePoints = 0,
+        i: (number|undefined);
 
-        // Calculate currently visible points.
-        for (const point of series.visibilityMap) {
-            if (point) {
-                visiblePoints++;
-            }
+    series.visibilityMap = series.getVisibilityMap();
+
+    // Calculate currently visible points.
+    for (const point of series.visibilityMap) {
+        if (point) {
+            visiblePoints++;
         }
-
-        series.visiblePointsCount = visiblePoints;
-
-        for (i = 0; i < (series.xData as any).length; i++) {
-            (series.yData as any)[i] = 1;
-        }
-
-        super.processData.call(this, arguments as any);
-
-        return;
     }
 
-}
+    series.visiblePointsCount = visiblePoints;
+
+    for (i = 0; i < (series.xData as any).length; i++) {
+        (series.yData as any)[i] = 1;
+    }
+});
 
 /* *
  *
@@ -535,4 +534,4 @@ export default TimelineSeries;
  * @type {Highcharts.Series}
  */
 
-''; // dettach doclets above
+''; // Dettach doclets above

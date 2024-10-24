@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2023 Highsoft AS
+ *  (c) 2010-2024 Highsoft AS
  *
  *  Authors: Magdalena Gut, Piotr Madej
  *
@@ -160,9 +160,6 @@ class GeoHeatmapSeries extends MapSeries {
              * @sample maps/demo/geoheatmap-europe/
              *         1 by default, set to 5
              *
-             * @type      {number}
-             * @default   1
-             * @since 11.0.0
              * @product   highmaps
              * @apioption plotOptions.geoheatmap.colsize
              */
@@ -175,7 +172,6 @@ class GeoHeatmapSeries extends MapSeries {
              * default value is pulled from the [options.colors](#colors) array.
              *
              * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
-             * @since 11.0.0
              * @product   highmaps
              * @apioption plotOptions.geoheatmap.color
              */
@@ -187,9 +183,6 @@ class GeoHeatmapSeries extends MapSeries {
              * @sample maps/demo/geoheatmap-europe/
              *         1 by default, set to 5
              *
-             * @type      {number}
-             * @default   1
-             * @since 11.0.0
              * @product   highmaps
              * @apioption plotOptions.geoheatmap.rowsize
              */
@@ -206,29 +199,29 @@ class GeoHeatmapSeries extends MapSeries {
              *         datasets
              *
              * @type      {boolean|Highcharts.InterpolationOptionsObject}
-             * @since     @next
+             * @since     11.2.0
              * @product   highmaps
              */
             interpolation: {
                 /**
                  * Enable or disable the interpolation of the geoheatmap series.
                  *
-                 * @since     @next
+                 * @since 11.2.0
                  */
                 enabled: false,
                 /**
                  * Represents how much blur should be added to the interpolated
                  * image. Works best in the range of 0-1, all higher values
-                 * would need a lot more perfomance of the machine to calculate
+                 * would need a lot more performance of the machine to calculate
                  * more detailed interpolation.
                  *
                  *  * **Note:** Useful, if the data is spread into wide range of
-                 *  longitue and latitude values.
+                 *  longitude and latitude values.
                  *
                  * @sample maps/series-geoheatmap/turkey-fire-areas
                  *         Simple demo of GeoHeatmap interpolation
                  *
-                 * @since     @next
+                 * @since  11.2.0
                  */
                 blur: 1
             }
@@ -241,15 +234,15 @@ class GeoHeatmapSeries extends MapSeries {
      *
      * */
 
-    public options: GeoHeatmapSeriesOptions = void 0 as any;
+    public options!: GeoHeatmapSeriesOptions;
 
-    public data: Array<GeoHeatmapPoint> = void 0 as any;
+    public data!: Array<GeoHeatmapPoint>;
 
-    public points: Array<GeoHeatmapPoint> = void 0 as any;
+    public points!: Array<GeoHeatmapPoint>;
 
-    public canvas?: HTMLCanvasElement = void 0 as any;
+    public canvas?: HTMLCanvasElement;
 
-    public context?: CanvasRenderingContext2D = void 0 as any;
+    public context?: CanvasRenderingContext2D;
 
     public isDirtyCanvas: boolean = true;
 
@@ -484,7 +477,8 @@ class GeoHeatmapSeries extends MapSeries {
                         };
 
                         const animOptions = merge(
-                                animObject(chart.renderer.globalAnimation)),
+                                animObject(chart.renderer.globalAnimation)
+                            ),
                             userStep = animOptions.step;
 
                         animOptions.step =
@@ -633,7 +627,7 @@ class GeoHeatmapSeries extends MapSeries {
         ) {
             if (
                 // If user drags map do not build k-d-tree
-                chart.pointer.hasDragged === false &&
+                !chart.pointer.hasDragged &&
                 // If user zooms in/out map do not build k-d-tree
                 (
                     +series.image.attr('animator') <= 0.01 ||
@@ -789,7 +783,7 @@ export default GeoHeatmapSeries;
  */
 
 /**
- * The value of the point, resulting in a color controled by options
+ * The value of the point, resulting in a color controlled by options
  * as set in the [colorAxis](#colorAxis) configuration.
  *
  * @type      {number|null}
@@ -809,11 +803,11 @@ export default GeoHeatmapSeries;
  *//**
  * Represents how much blur should be added to the interpolated
  * image. Works best in the range of 0-1, all higher values
- * would need a lot more perfomance of the machine to calculate
+ * would need a lot more performance of the machine to calculate
  * more detailed interpolation.
  *
  * @name Highcharts.InterpolationOptionsObject#blur
  * @type {number}
  */
 
-''; // adds doclets above to the transpiled file
+''; // Adds doclets above to the transpiled file

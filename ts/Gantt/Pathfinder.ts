@@ -27,7 +27,7 @@ import type SVGElement from '../Core/Renderer/SVG/SVGElement';
 import Connection from './Connection.js';
 import Chart from '../Core/Chart/Chart.js';
 import PathfinderAlgorithms from './PathfinderAlgorithms.js';
-import PathfinderComposition from './PathfinderComposition.js';
+import PathfinderComposition, { PointConnectOptionsObject } from './PathfinderComposition.js';
 import Point from '../Core/Series/Point.js';
 import U from '../Core/Utilities.js';
 const {
@@ -173,7 +173,7 @@ function calculateObstacleMargin(obstacles: Array<any>): number {
             }
         }
     }
-    // Ensure we always have at least one value, even in very spaceous charts
+    // Ensure we always have at least one value, even in very spacious charts
     distances.push(80);
 
     return max(
@@ -239,12 +239,12 @@ class Pathfinder {
      *
      * */
 
-    public chart: Chart = void 0 as any;
-    public chartObstacles: Array<any> = void 0 as any;
-    public chartObstacleMetrics: Record<string, number> = void 0 as any;
-    public connections: Array<Connection> = void 0 as any;
-    public group: SVGElement = void 0 as any;
-    public lineObstacles: Array<any> = void 0 as any;
+    public chart!: Chart;
+    public chartObstacles!: Array<any>;
+    public chartObstacleMetrics!: Record<string, number>;
+    public connections!: Array<Connection>;
+    public group!: SVGElement;
+    public lineObstacles!: Array<any>;
 
     /* *
      *
@@ -301,21 +301,23 @@ class Pathfinder {
                             .dependency;
                     }
 
-                    const connects = (
-                        point.options?.connect &&
-                        splat(point.options.connect)
-                    );
+                    const connects = point.options?.connect ?
+                        splat(point.options.connect) :
+                        [];
 
                     let to: (Axis|Series|Point|undefined);
 
-                    if (point.visible && point.isInside !== false && connects) {
-                        connects.forEach(function (
-                            connect: (string|Record<string, string>)
-                        ): void {
-                            to = chart.get(
-                                typeof connect === 'string' ?
-                                    connect : connect.to
-                            );
+                    if (point.visible && point.isInside !== false) {
+                        connects.forEach((
+                            connect
+                        ): void => {
+                            const toId = typeof connect === 'string' ?
+                                connect :
+                                (connect as PointConnectOptionsObject).to;
+
+                            if (toId) {
+                                to = chart.get(toId);
+                            }
                             if (
                                 to instanceof Point &&
                                 to.series.visible &&
@@ -437,10 +439,13 @@ class Pathfinder {
      * @function Highcharts.Pathfinder#getChartObstacles
      *
      * @param {Object} options
-     *        Options for the calculation. Currenlty only
-     *        options.algorithmMargin.
+     *        Options for the calculation. Currently only
+     *        `options.algorithmMargin`.
      *
-     * @return {Array<object>}
+     * @param {number} options.algorithmMargin
+     *        The algorithm margin to use for the obstacles.
+
+    * @return {Array<object>}
      *         An array of calculated obstacles. Each obstacle is defined as an
      *         object with xMin, xMax, yMin and yMax properties.
      */

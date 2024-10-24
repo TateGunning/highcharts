@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Sebastian Bochan, Rafal Sebestjanski
+ *  (c) 2010-2024 Sebastian Bochan, Rafal Sebestjanski
  *
  *  License: www.highcharts.com/license
  *
@@ -76,25 +76,6 @@ class DumbbellSeries extends AreaRangeSeries {
      *
      * */
 
-    /**
-     * The dumbbell series is a cartesian series with higher and lower values
-     * for each point along an X axis, connected with a line between the
-     * values.
-     *
-     * Requires `highcharts-more.js` and `modules/dumbbell.js`.
-     *
-     * @sample {highcharts} highcharts/demo/dumbbell/
-     *         Dumbbell chart
-     * @sample {highcharts} highcharts/series-dumbbell/styled-mode-dumbbell/
-     *         Styled mode
-     *
-     * @extends      plotOptions.arearange
-     * @product      highcharts highstock
-     * @excluding    fillColor, fillOpacity, lineWidth, stack, stacking,
-     *               stickyTracking, trackByArea, boostThreshold, boostBlending
-     * @since 8.0.0
-     * @optionparent plotOptions.dumbbell
-     */
     public static defaultOptions: DumbbellSeriesOptions = merge(
         AreaRangeSeries.defaultOptions,
         DumbbellSeriesDefaults
@@ -106,10 +87,10 @@ class DumbbellSeries extends AreaRangeSeries {
      *
      * */
 
-    public data: Array<DumbbellPoint> = void 0 as any;
-    public options: DumbbellSeriesOptions = void 0 as any;
-    public points: Array<DumbbellPoint> = void 0 as any;
-    public columnMetrics: ColumnMetricsObject = void 0 as any;
+    public data!: Array<DumbbellPoint>;
+    public options!: DumbbellSeriesOptions;
+    public points!: Array<DumbbellPoint>;
+    public columnMetrics!: ColumnMetricsObject;
     public lowColor?: ColorType;
 
 
@@ -226,7 +207,7 @@ class DumbbellSeries extends AreaRangeSeries {
                 'L',
                 point.plotX,
                 pointBottom
-            ]], connectorWidth, 'ceil')
+            ]], connectorWidth)
         };
 
         if (!chart.styledMode) {
@@ -363,28 +344,6 @@ class DumbbellSeries extends AreaRangeSeries {
             }
             i++;
         }
-    }
-
-    /**
-     * Get non-presentational attributes for a point. Used internally for
-     * both styled mode and classic. Set correct position in link with connector
-     * line.
-     *
-     * @see Series#pointAttribs
-     *
-     * @function Highcharts.Series#markerAttribs
-     *
-     * @return {Highcharts.SVGAttributes}
-     *         A hash containing those attributes that are not settable from
-     *         CSS.
-     */
-    public markerAttribs(): SVGAttributes {
-        const ret = super.markerAttribs.apply(this, arguments as any);
-
-        ret.x = Math.floor(ret.x || 0);
-        ret.y = Math.floor(ret.y || 0);
-
-        return ret;
     }
 
     /**

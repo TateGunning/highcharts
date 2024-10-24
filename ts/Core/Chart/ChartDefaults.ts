@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -447,7 +447,7 @@ const ChartDefaults: ChartOptions = {
      *
      * @type      {number}
      * @default   2
-     * @since     @next
+     * @since     11.3.0
      * @apioption chart.axisLayoutRuns
      */
 
@@ -491,8 +491,11 @@ const ChartDefaults: ChartOptions = {
          * Decides in what dimensions the user can pan the chart. Can be
          * one of `x`, `y`, or `xy`.
          *
-         * When this option is set to `y` or `xy`, [yAxis.startOnTick](#yAxis.startOnTick)
-         * and [yAxis.endOnTick](#yAxis.endOnTick) are overwritten to `false`.
+         * During panning, all axes will behave as if
+         * [`startOnTick`](#yAxis.startOnTick) and
+         * [`endOnTick`](#yAxis.endOnTick) were set to `false`. After the
+         * panning action is finished, the axes will adjust to their actual
+         * settings.
          *
          * @sample {highcharts} highcharts/chart/panning-type
          *         Zooming and xy panning
@@ -500,7 +503,6 @@ const ChartDefaults: ChartOptions = {
          * @declare    Highcharts.OptionsChartPanningTypeValue
          * @type       {string}
          * @validvalue ["x", "y", "xy"]
-         * @default    {highcharts|highstock} x
          * @product    highcharts highstock gantt
          */
         type: 'x'
@@ -614,8 +616,7 @@ const ChartDefaults: ChartOptions = {
      * @productdesc {highcharts}
      * If a bar series is present in the chart, it will be inverted
      * automatically. Inverting the chart doesn't have an effect if there
-     * are no cartesian series in the chart, or if the chart is
-     * [polar](#chart.polar).
+     * are no cartesian series in the chart.
      *
      * @sample {highcharts} highcharts/chart/inverted/
      *         Inverted line
@@ -681,7 +682,7 @@ const ChartDefaults: ChartOptions = {
          */
         theme: {
             /**
-             * zIndex of the button.
+             * The z-index of the button.
              *
              * @type {number}
              * @apioption chart.resetZoomButton.theme.zIndex
@@ -967,6 +968,11 @@ const ChartDefaults: ChartOptions = {
      * Additional CSS styles to apply inline to the container `div` and the root
      * SVG.
      *
+     * According to the CSS syntax documentation, it is recommended to quote
+     * font family names that contain white space, digits, or punctuation
+     * characters other than hyphens. In such cases, wrap the fontFamily
+     * name as follows: `fontFamily: '"Font name"'`.
+     *
      * Since v11, the root font size is 1rem by default, and all child element
      * are given a relative `em` font size by default. This allows implementers
      * to control all the chart's font sizes by only setting the root level.
@@ -975,6 +981,8 @@ const ChartDefaults: ChartOptions = {
      *         `.highcharts-root` class.
      * @sample {highcharts} highcharts/chart/style-serif-font/
      *         Using a serif type font
+     * @sample {highcharts} highcharts/chart/style-special-font/
+     *         Using a font with special character in name
      * @sample {highcharts} highcharts/members/relative-font-size/
      *         Relative font sizes
      * @sample {highcharts} highcharts/css/em/
@@ -1234,13 +1242,15 @@ const ChartDefaults: ChartOptions = {
      * element's height is 0.
      *
      * @sample {highcharts} highcharts/chart/height/
-     *         500px height
+     *         Forced 200px height
      * @sample {highstock} stock/chart/height/
      *         300px height
      * @sample {highmaps} maps/chart/size/
      *         Chart with explicit size
      * @sample highcharts/chart/height-percent/
      *         Highcharts with percentage height
+     * @sample highcharts/chart/height-inherited/
+     *         Chart with inherited height
      *
      * @type {null|number|string}
      */

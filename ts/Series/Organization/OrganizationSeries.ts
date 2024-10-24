@@ -2,7 +2,7 @@
  *
  *  Organization chart module
  *
- *  (c) 2018-2021 Torstein Honsi
+ *  (c) 2018-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -39,11 +39,15 @@ const {
 import U from '../../Core/Utilities.js';
 const {
     css,
+    crisp,
     extend,
     isNumber,
     merge,
     pick
 } = U;
+import SVGElement from '../../Core/Renderer/SVG/SVGElement.js';
+import TextPath from '../../Extensions/TextPath.js';
+TextPath.compose(SVGElement);
 
 /* *
  *
@@ -78,11 +82,11 @@ class OrganizationSeries extends SankeySeries {
      *
      * */
 
-    public data: Array<OrganizationPoint> = void 0 as any;
+    public data!: Array<OrganizationPoint>;
 
-    public options: OrganizationSeriesOptions = void 0 as any;
+    public options!: OrganizationSeriesOptions;
 
-    public points: Array<OrganizationPoint> = void 0 as any;
+    public points!: Array<OrganizationPoint>;
 
     /* *
      *
@@ -234,8 +238,7 @@ class OrganizationSeries extends SankeySeries {
             options = this.options,
             fromNode = point.fromNode,
             toNode = point.toNode,
-            linkWidth = pick(options.linkLineWidth, options.link.lineWidth),
-            crisp = (Math.round(linkWidth) % 2) / 2,
+            linkWidth = pick(options.linkLineWidth, options.link.lineWidth, 0),
             factor = pick((options.link as any).offset, 0.5),
             type = pick(
                 point.options.link && point.options.link.type,
@@ -243,24 +246,28 @@ class OrganizationSeries extends SankeySeries {
             );
         if (fromNode.shapeArgs && toNode.shapeArgs) {
             const hangingIndent: number = options.hangingIndent as any,
+                hangingRight = options.hangingSide === 'right',
                 toOffset = toNode.options.offset,
                 percentOffset =
                     /%$/.test(toOffset as any) && parseInt(toOffset as any, 10),
                 inverted = chart.inverted;
 
-            let x1 = Math.floor(
+            let x1 = crisp(
                     (fromNode.shapeArgs.x || 0) +
-                    (fromNode.shapeArgs.width || 0)
-                ) + crisp,
-                y1 = Math.floor(
+                       (fromNode.shapeArgs.width || 0),
+                    linkWidth
+                ),
+                y1 = crisp(
                     (fromNode.shapeArgs.y || 0) +
-                    (fromNode.shapeArgs.height || 0) / 2
-                ) + crisp,
-                x2 = Math.floor(toNode.shapeArgs.x || 0) + crisp,
-                y2 = Math.floor(
+                        (fromNode.shapeArgs.height || 0) / 2,
+                    linkWidth
+                ),
+                x2 = crisp(toNode.shapeArgs.x || 0, linkWidth),
+                y2 = crisp(
                     (toNode.shapeArgs.y || 0) +
-                    (toNode.shapeArgs.height || 0) / 2
-                ) + crisp,
+                        (toNode.shapeArgs.height || 0) / 2,
+                    linkWidth
+                ),
                 xMiddle;
 
             if (inverted) {
@@ -268,13 +275,14 @@ class OrganizationSeries extends SankeySeries {
                 x2 += (toNode.shapeArgs.width || 0);
             }
             xMiddle = this.colDistance ?
-                Math.floor(
+                crisp(
                     x2 +
                         ((inverted ? 1 : -1) *
                             (this.colDistance - this.nodeWidth)) /
-                            2
-                ) + crisp :
-                Math.floor((x2 + x1) / 2) + crisp;
+                            2,
+                    linkWidth
+                ) :
+                crisp((x2 + x1) / 2, linkWidth);
 
             // Put the link on the side of the node when an offset is given. HR
             // node in the main demo.
@@ -282,10 +290,11 @@ class OrganizationSeries extends SankeySeries {
                 percentOffset &&
                 (percentOffset >= 50 || percentOffset <= -50)
             ) {
-                xMiddle = x2 = Math.floor(
+                xMiddle = x2 = crisp(
                     x2 + (inverted ? -0.5 : 0.5) *
-                    (toNode.shapeArgs.width || 0)
-                ) + crisp;
+                        (toNode.shapeArgs.width || 0),
+                    linkWidth
+                );
                 y2 = toNode.shapeArgs.y || 0;
                 if (percentOffset > 0) {
                     y2 += toNode.shapeArgs.height || 0;
@@ -294,26 +303,33 @@ class OrganizationSeries extends SankeySeries {
 
             if (toNode.hangsFrom === fromNode) {
                 if (chart.inverted) {
-                    y1 = Math.floor(
-                        (fromNode.shapeArgs.y || 0) +
-                        (fromNode.shapeArgs.height || 0) -
-                        hangingIndent / 2
-                    ) + crisp;
-                    y2 = (
+                    y1 = !hangingRight ?
+                        crisp(
+                            (fromNode.shapeArgs.y || 0) +
+                                (fromNode.shapeArgs.height || 0) -
+                                hangingIndent / 2,
+                            linkWidth
+                        ) :
+                        crisp(
+                            (fromNode.shapeArgs.y || 0) + hangingIndent / 2,
+                            linkWidth
+                        );
+                    y2 = !hangingRight ? (
                         (toNode.shapeArgs.y || 0) +
                         (toNode.shapeArgs.height || 0)
-                    );
+                    ) : (toNode.shapeArgs.y || 0) + hangingIndent / 2;
                 } else {
-                    y1 = Math.floor(
-                        (fromNode.shapeArgs.y || 0) +
-                        hangingIndent / 2
-                    ) + crisp;
+                    y1 = crisp(
+                        (fromNode.shapeArgs.y || 0) + hangingIndent / 2,
+                        linkWidth
+                    );
 
                 }
-                xMiddle = x2 = Math.floor(
+                xMiddle = x2 = crisp(
                     (toNode.shapeArgs.x || 0) +
-                    (toNode.shapeArgs.width || 0) / 2
-                ) + crisp;
+                        (toNode.shapeArgs.width || 0) / 2,
+                    linkWidth
+                );
             }
 
             point.plotX = xMiddle;
@@ -366,18 +382,19 @@ class OrganizationSeries extends SankeySeries {
 
         const chart = this.chart,
             options = this.options,
-            translationFactor = this.translationFactor,
             sum = node.getSum(),
+            translationFactor = this.translationFactor,
             nodeHeight = Math.max(
                 Math.round(sum * translationFactor),
-                this.options.minLinkWidth || 0
+                options.minLinkWidth || 0
             ),
-            nodeWidth = Math.round(this.nodeWidth),
+            hangingRight = options.hangingSide === 'right',
             indent = options.hangingIndent || 0,
-            sign = chart.inverted ? -1 : 1,
-            shapeArgs = (node.shapeArgs as any),
             indentLogic = options.hangingIndentTranslation,
-            minLength = options.minNodeLength || 10;
+            minLength = options.minNodeLength || 10,
+            nodeWidth = Math.round(this.nodeWidth),
+            shapeArgs = (node.shapeArgs as any),
+            sign = chart.inverted ? -1 : 1;
 
         let parentNode = node.hangsFrom;
 
@@ -385,9 +402,14 @@ class OrganizationSeries extends SankeySeries {
             if (indentLogic === 'cumulative') {
                 // Move to the right:
                 shapeArgs.height -= indent;
-                shapeArgs.y -= sign * indent;
+
+                // If hanging right, first indent is handled by shrinking.
+                if (chart.inverted && !hangingRight) {
+                    shapeArgs.y -= sign * indent;
+                }
                 while (parentNode) {
-                    shapeArgs.y += sign * indent;
+                    // Hanging right is the same direction as non-inverted.
+                    shapeArgs.y += (hangingRight ? 1 : sign) * indent;
                     parentNode = parentNode.hangsFrom;
                 }
             } else if (indentLogic === 'shrink') {
@@ -397,13 +419,19 @@ class OrganizationSeries extends SankeySeries {
                     shapeArgs.height > indent + minLength
                 ) {
                     shapeArgs.height -= indent;
+
+                    // Fixes nodes not dropping in non-inverted charts.
+                    // Hanging right is the same as non-inverted.
+                    if (!chart.inverted || hangingRight) {
+                        shapeArgs.y += indent;
+                    }
                     parentNode = parentNode.hangsFrom;
                 }
             } else {
                 // Option indentLogic === "inherit"
                 // Do nothing (v9.3.2 and prev versions):
                 shapeArgs.height -= indent;
-                if (!chart.inverted) {
+                if (!chart.inverted || hangingRight) {
                     shapeArgs.y += indent;
                 }
             }
@@ -428,8 +456,10 @@ class OrganizationSeries extends SankeySeries {
 
         if (dlOptions.linkTextPath && dlOptions.linkTextPath.enabled) {
             for (const link of this.points) {
-                link.options.dataLabels = merge(link.options.dataLabels,
-                    { useHTML: false });
+                link.options.dataLabels = merge(
+                    link.options.dataLabels,
+                    { useHTML: false }
+                );
             }
         }
 
@@ -494,4 +524,4 @@ export default OrganizationSeries;
  * @typedef {"inherit"|"cumulative"|"shrink"} Highcharts.OrganizationHangingIndentTranslationValue
  */
 
-''; // detach doclets above
+''; // Detach doclets above

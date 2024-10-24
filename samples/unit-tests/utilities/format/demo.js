@@ -123,10 +123,12 @@ QUnit.module('Format', () => {
         // Markup in format
         assert.strictEqual(
             format(
-                '{value:<span style="font-size: 12px; font-weight: bold">%a</span> %b %e}',
+                '{value:<span style="font-size: 12px; font-weight: bold">' +
+                '%a</span> %b %e}',
                 { value: Date.UTC(2023, 5, 5, 12) }
             ),
-            '<span style="font-size: 12px; font-weight: bold">Mon</span> Jun  5',
+            '<span style="font-size: 12px; font-weight: bold">Mon</span> Jun ' +
+            ' 5',
             'HTML inside format should be preserved'
         );
 
@@ -176,6 +178,13 @@ QUnit.module('Format', () => {
             format('{point.proto.__proto__}', { point }),
             '',
             'Prototypes should not be accessible through format strings'
+        );
+
+        assert.strictEqual(
+            format('{value:%b \u2019%y}', { value: 1706745600000 }),
+            'Feb ’24',
+            `Right single quotation mark shouldn't disable the format method,
+            #21124.`
         );
 
         // Reset
@@ -231,6 +240,24 @@ QUnit.module('Format', () => {
             ).replace(/\s\s+/g, ' ').trim(),
             'Value: Deep, deeper: 123',
             'Nested conditions'
+        );
+
+        const f = `
+        {#if (lt value 3)}
+            Green
+        {else}
+            {#if (lt value 7)}
+                Yellow
+            {else}
+                Red
+            {/if}
+        {/if}
+        `;
+
+        assert.deepEqual(
+            [2, 5, 8].map(value => format(f, { value }).trim()),
+            ['Green', 'Yellow', 'Red'],
+            'Nested conditions with sub expression'
         );
 
     });
@@ -312,9 +339,15 @@ QUnit.module('Format', () => {
             '',
             'Division by zero'
         );
+        assert.strictEqual(
+            Highcharts.numberFormat(-0.4999999, 0, '.', ''),
+            '0',
+            'numberFormat should return zero without singed minus, #20564.'
+        );
     });
 
     QUnit.test('Relational helpers', assert => {
+
         assert.strictEqual(
             format(
                 '{#if (lt one 2)}true{/if}',

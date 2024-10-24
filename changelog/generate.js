@@ -93,7 +93,6 @@ const getFile = url => new Promise((resolve, reject) => {
             params.branches,
             params.highchartsDashboards
         ).catch(e => console.error(e));
-
         callback(log);
     }
 
@@ -148,19 +147,19 @@ const getFile = url => new Promise((resolve, reject) => {
             // objects
             if (replacements.length > 1) {
                 replacements = replacements.filter(
-                    longKey => longKey.lastIndexOf(shortKey) === longKey.length - shortKey.length
+                    longKey => longKey.startsWith(shortKey)
                 );
 
                 // Check if it is a member on the root series options
                 if (
                     replacements.length > 1 &&
-                    replacements.indexOf(`plotOptions.series.${shortKey}`) !== -1
+                    replacements.includes(`plotOptions.series.${shortKey}`)
                 ) {
                     replacements = replacements.filter(longKey => {
                         // Remove series-specific members so that we may isolate
                         // it to plotOptions.series.shortKey
                         const m = longKey.match(
-                            new RegExp('plotOptions\.([a-zA-Z\.]+)\.' + shortKey)
+                            new RegExp('plotOptions\\.([a-zA-Z\\.]+)\\.' + shortKey)
                         );
                         return !m || m[1] === 'series';
                     });
@@ -347,8 +346,9 @@ const getFile = url => new Promise((resolve, reject) => {
                         products = products.replace('var products = ', '');
                         products = JSON.parse(products);
 
-                        for (name in products) {
+                        delete products['Highcharts Dashboards'];
 
+                        for (name in products) {
                             if (products.hasOwnProperty(name)) { // eslint-disable-line no-prototype-builtins
 
                                 products[name].date =

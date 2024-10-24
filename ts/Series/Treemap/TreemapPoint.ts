@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2014-2021 Highsoft AS
+ *  (c) 2014-2024 Highsoft AS
  *
  *  Authors: Jon Arild Nygard / Oystein Moseng
  *
@@ -56,21 +56,21 @@ class TreemapPoint extends ScatterPoint {
 
     public imageUrl?: string;
 
-    public name: string = void 0 as any;
+    public name!: string;
 
-    public node: TreemapNode = void 0 as any;
+    public node!: TreemapNode;
 
-    public options: TreemapPointOptions = void 0 as any;
+    public options!: TreemapPointOptions;
 
     public parent?: string;
 
-    public series: TreemapSeries = void 0 as any;
+    public series!: TreemapSeries;
 
     public shapeType: 'arc'|'circle'|'image'|'path'|'rect'|'text' = 'rect';
 
     public sortIndex?: number;
 
-    public value: (number|null) = void 0 as any;
+    public value!: (number|null);
 
     /* *
      *
@@ -91,7 +91,10 @@ class TreemapPoint extends ScatterPoint {
         let className = super.getClassName();
 
         // Above the current level
-        if (this.node.level <= series.nodeMap[series.rootNode].level) {
+        if (
+            this.node.level <= series.nodeMap[series.rootNode].level &&
+            this.node.children.length
+        ) {
             className += ' highcharts-above-level';
 
         } else if (

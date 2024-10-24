@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -256,7 +256,7 @@ class Tick {
             }
         }
 
-        // set properties for access in render method
+        // Set properties for access in render method
         /**
          * True if the tick is the first one on the axis.
          * @name Highcharts.Tick#isFirst
@@ -300,10 +300,10 @@ class Tick {
                 return labelOptions.formatter.call(ctx, ctx);
             }
             if (labelOptions.format) {
-                ctx.text = axis.defaultLabelFormatter.call(ctx, ctx);
+                ctx.text = axis.defaultLabelFormatter.call(ctx);
                 return F.format(labelOptions.format, ctx, chart);
             }
-            return axis.defaultLabelFormatter.call(ctx, ctx);
+            return axis.defaultLabelFormatter.call(ctx);
         };
         const str = labelFormatter.call(ctx, ctx);
 
@@ -322,7 +322,7 @@ class Tick {
                     if (
                         (label as any).getBBox().width <
                         axis.getSlotWidth(tick as any) - 2 *
-                            labelOptions.padding
+                            (labelOptions.padding || 0)
                     ) {
                         return;
                     }
@@ -355,7 +355,7 @@ class Tick {
             // Base value to detect change for new calls to getBBox
             tick.rotation = 0;
 
-        // update
+        // Update
         } else if (label && label.textStr !== str && !animateLabels) {
             // When resetting text, also reset the width if dynamically set
             // (#8809)
@@ -494,7 +494,7 @@ class Tick {
             };
 
         // Chrome workaround for #10516
-        pos.y = clamp(pos.y, -1e5, 1e5);
+        pos.y = clamp(pos.y, -1e9, 1e9);
 
         fireEvent(this, 'afterGetPosition', { pos: pos });
 
@@ -613,7 +613,7 @@ class Tick {
         y: number,
         tickLength: number,
         tickWidth: number,
-        horiz: boolean,
+        horiz: boolean = false,
         renderer: SVGRenderer
     ): SVGPath {
         return renderer.crispLine([[
@@ -820,8 +820,20 @@ class Tick {
             xy = tick.getPosition(horiz, pos, tickmarkOffset, old),
             x = xy.x,
             y = xy.y,
-            reverseCrisp = ((horiz && x === axis.pos + axis.len) ||
-                (!horiz && y === axis.pos)) ? -1 : 1; // #1480, #1687
+            axisStart = axis.pos,
+            axisEnd = axisStart + axis.len,
+            pxPos = horiz ? x : y;
+
+        // Anything that is not between `axis.pos` and `axis.pos + axis.length`
+        // should not be visible (#20166). The `correctFloat` is for reversed
+        // axes in Safari.
+        if (
+            !axis.chart.polar &&
+            tick.isNew &&
+            (correctFloat(pxPos) < axisStart || pxPos > axisEnd)
+        ) {
+            opacity = 0;
+        }
 
         const labelOpacity = pick(
             opacity,
@@ -832,12 +844,12 @@ class Tick {
         this.isActive = true;
 
         // Create the grid line
-        this.renderGridLine(old, opacity, reverseCrisp);
+        this.renderGridLine(old, opacity);
 
-        // create the tick mark
-        this.renderMark(xy, opacity, reverseCrisp);
+        // Create the tick mark
+        this.renderMark(xy, opacity);
 
-        // the label is created on init - now move it into place
+        // The label is created on init - now move it into place
         this.renderLabel(xy, old, labelOpacity, index);
 
         tick.isNew = false;
@@ -852,12 +864,10 @@ class Tick {
      * @function Highcharts.Tick#renderGridLine
      * @param {boolean} old  Whether or not the tick is old
      * @param {number} opacity  The opacity of the grid line
-     * @param {number} reverseCrisp  Modifier for avoiding overlapping 1 or -1
      */
     public renderGridLine(
         old: boolean|undefined,
-        opacity: number,
-        reverseCrisp: number
+        opacity: number
     ): void {
         const tick = this,
             axis = tick.axis,
@@ -910,7 +920,7 @@ class Tick {
             gridLinePath = axis.getPlotLinePath(
                 {
                     value: pos + tickmarkOffset,
-                    lineWidth: gridLine.strokeWidth() * reverseCrisp,
+                    lineWidth: gridLine.strokeWidth(),
                     force: 'pass',
                     old: old,
                     acrossPanes: false // #18025
@@ -935,12 +945,10 @@ class Tick {
      * @function Highcharts.Tick#renderMark
      * @param {Highcharts.PositionObject} xy  The position vector of the mark
      * @param {number} opacity  The opacity of the mark
-     * @param {number} reverseCrisp  Modifier for avoiding overlapping 1 or -1
      */
     public renderMark(
         xy: PositionObject,
-        opacity: number,
-        reverseCrisp: number
+        opacity: number
     ): void {
         const tick = this,
             axis = tick.axis,
@@ -964,7 +972,7 @@ class Tick {
 
         if (tickSize) {
 
-            // negate the length
+            // Negate the length
             if (axis.opposite) {
                 tickSize[0] = -tickSize[0];
             }
@@ -993,8 +1001,8 @@ class Tick {
                     x,
                     y,
                     tickSize[0],
-                    mark.strokeWidth() * reverseCrisp,
-                    axis.horiz as any,
+                    mark.strokeWidth(),
+                    axis.horiz,
                     renderer
                 ),
                 opacity: opacity
@@ -1072,9 +1080,9 @@ class Tick {
                 tick.handleOverflow(xy);
             }
 
-            // apply step
+            // Apply step
             if (step && index % step) {
-                // show those indices dividable by step
+                // Show those indices dividable by step
                 show = false;
             }
 
@@ -1127,7 +1135,7 @@ class Tick {
  * */
 
 interface Tick extends TickLike {
-    // nothing here yet
+    // Nothing here yet
 }
 
 /* *
@@ -1186,7 +1194,7 @@ export default Tick;
  */
 
 /**
- * Additonal time tick information.
+ * Additional time tick information.
  *
  * @interface Highcharts.TimeTicksInfoObject
  * @extends Highcharts.TimeNormalizedObject
@@ -1198,4 +1206,4 @@ export default Tick;
  * @type {number}
  */
 
-(''); // keeps doclets above in JS file
+(''); // Keeps doclets above in JS file

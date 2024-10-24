@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -141,7 +141,35 @@ const rangeSelector: RangeSelectorOptions = {
      *
      * @type      {Array<*>}
      */
-    buttons: void 0,
+    buttons: [{
+        type: 'month',
+        count: 1,
+        text: '1m',
+        title: 'View 1 month'
+    }, {
+        type: 'month',
+        count: 3,
+        text: '3m',
+        title: 'View 3 months'
+    }, {
+        type: 'month',
+        count: 6,
+        text: '6m',
+        title: 'View 6 months'
+    }, {
+        type: 'ytd',
+        text: 'YTD',
+        title: 'View year to date'
+    }, {
+        type: 'year',
+        count: 1,
+        text: '1y',
+        title: 'View 1 year'
+    }, {
+        type: 'all',
+        text: 'All',
+        title: 'View all'
+    }],
 
     /**
      * How many units of the defined type the button should span. If `type`
@@ -364,7 +392,7 @@ const rangeSelector: RangeSelectorOptions = {
      * @type  {number|undefined}
      * @since 2.1.9
      */
-    height: void 0, // reserved space for buttons and input
+    height: void 0, // Reserved space for buttons and input
 
     /**
      * The border color of the date input boxes.

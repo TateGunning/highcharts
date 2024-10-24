@@ -35,6 +35,7 @@ module.exports = {
             'stock/getting-started-stock',
             'stock/understanding-highcharts-stock',
             'stock/stock-tools',
+            'stock/advanced-annotations',
             'stock/candlestick-chart',
             'stock/compare',
             'stock/cumulative-sum',
@@ -49,7 +50,8 @@ module.exports = {
             'stock/range-selector',
             'stock/axis-resizer',
             'stock/technical-indicator-series',
-            'stock/custom-technical-indicators'
+            'stock/custom-technical-indicators',
+            'stock/standalone-navigator'
         ],
         'Maps': [
             'maps/getting-started',
@@ -60,6 +62,7 @@ module.exports = {
             'maps/create-custom-maps',
             'maps/custom-geojson-maps',
             'maps/adding-points-and-lines',
+            'maps/map-drill-down',
             'maps/map-series',
             'maps/mapline-series',
             'maps/mappoint-series',
@@ -96,12 +99,28 @@ module.exports = {
             'dashboards/light-dark-theme',
             'dashboards/data-handling',
             'dashboards/data-pool-and-connectors',
+            'dashboards/data-table',
             'dashboards/data-modifiers',
             'dashboards/mathmodifier-module',
             'dashboards/custom-component',
             'dashboards/installation-with-es-modules',
             'dashboards/get-options',
             'dashboards/frequently-asked-questions',
+        ],
+        'DataGrid': [
+            'datagrid/general',
+            'datagrid/installation',
+            'datagrid/understanding-datagrid',
+            'datagrid/columns',
+            'datagrid/header',
+            'datagrid/events',
+            'datagrid/performance',
+            'datagrid/style-by-css',
+            'datagrid/datagrid-v2-migration',
+            'datagrid/datagrid-with-angular',
+            'datagrid/datagrid-with-react',
+            'datagrid/datagrid-with-vue'
+            
         ],
         'Chart and series types': [
             'chart-and-series-types/chart-types',
@@ -158,8 +177,10 @@ module.exports = {
 
         ],
         'Advanced chart features': [
+            'advanced-chart-features/renderer',
             'advanced-chart-features/annotations-module',
             'advanced-chart-features/annotations-and-fibonacci-retracements',
+            'advanced-chart-features/annotations-gui',
             'advanced-chart-features/boost-module',
             'advanced-chart-features/breadcrumbs',
             'advanced-chart-features/data-sorting',

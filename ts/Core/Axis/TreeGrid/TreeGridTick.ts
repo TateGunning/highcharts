@@ -63,15 +63,10 @@ export interface TreeGridTick extends Tick {
     axis: TreeGridAxisComposition;
     options: TreeGridAxisOptions;
     treeGrid: TreeGridTickAdditions;
+    collapse(redraw?: boolean): void;
+    expand(redraw?: boolean): void;
+    toggleCollapse(redraw?: boolean): void;
 }
-
-/* *
- *
- *  Constants
- *
- * */
-
-const composedMembers: Array<unknown> = [];
 
 /* *
  *
@@ -200,8 +195,7 @@ function wrapGetLabelPosition(
         ),
         pos = tick.pos,
         axis = tick.axis,
-        options = axis.options,
-        isTreeGrid = options.type === 'treegrid',
+        isTreeGrid = axis.type === 'treegrid',
         result = proceed.apply(
             tick,
             [x, y, label, horiz, lbOptions, tickmarkOffset, index, step]
@@ -276,7 +270,7 @@ function wrapRenderLabel(
         } = node || {},
         hasDescendants = node && descendants && descendants > 0,
         level = depth,
-        isTreeGridElement = (axisOptions.type === 'treegrid') && labelElement,
+        isTreeGridElement = (axis.type === 'treegrid') && labelElement,
         shouldRender = tickPositions.indexOf(pos) > -1,
         prefixClassName = 'highcharts-treegrid-node-',
         prefixLevelClass = prefixClassName + 'level-',
@@ -304,7 +298,6 @@ function wrapRenderLabel(
             {
                 color: (
                     !styledMode &&
-                    label.styles &&
                     label.styles.color ||
                     ''
                 ),
@@ -385,27 +378,28 @@ class TreeGridTickAdditions {
     public static compose(
         TickClass: typeof Tick
     ): void {
+        const tickProto = TickClass.prototype as TreeGridTick;
 
-        if (U.pushUnique(composedMembers, TickClass)) {
+        if (!tickProto.toggleCollapse) {
             addEvent(TickClass, 'init', onTickInit);
 
-            wrap(TickClass.prototype, 'getLabelPosition', wrapGetLabelPosition);
-            wrap(TickClass.prototype, 'renderLabel', wrapRenderLabel);
+            wrap(tickProto, 'getLabelPosition', wrapGetLabelPosition);
+            wrap(tickProto, 'renderLabel', wrapRenderLabel);
 
-            // backwards compatibility
-            (TickClass.prototype as any).collapse = function (
+            // Backwards compatibility
+            tickProto.collapse = function (
                 this: TreeGridTick,
                 redraw?: boolean
             ): void {
                 this.treeGrid.collapse(redraw);
             };
-            (TickClass.prototype as any).expand = function (
+            tickProto.expand = function (
                 this: TreeGridTick,
                 redraw?: boolean
             ): void {
                 this.treeGrid.expand(redraw);
             };
-            (TickClass.prototype as any).toggleCollapse = function (
+            tickProto.toggleCollapse = function (
                 this: TreeGridTick,
                 redraw?: boolean
             ): void {

@@ -26,7 +26,6 @@ import type ChartOptions from '../Chart/ChartOptions';
 import type ColorType from '../Color/ColorType';
 import type Point from '../Series/Point';
 import type PositionObject from '../Renderer/PositionObject';
-import type FontMetricsObject from '../Renderer/FontMetricsObject';
 import type SizeObject from '../Renderer/SizeObject';
 import type SVGElement from '../Renderer/SVG/SVGElement';
 import type SVGPath from '../Renderer/SVG/SVGPath';
@@ -140,14 +139,6 @@ enum GridAxisSide {
 
 /* *
  *
- *  Constants
- *
- * */
-
-const composedMembers: Array<unknown> = [];
-
-/* *
- *
  *  Functions
  *
  * */
@@ -211,7 +202,7 @@ function compose<T extends typeof Axis>(
     TickClass: typeof Tick
 ): (T&typeof GridAxis) {
 
-    if (U.pushUnique(composedMembers, AxisClass)) {
+    if (!AxisClass.keepProps.includes('grid')) {
         AxisClass.keepProps.push('grid');
 
         AxisClass.prototype.getMaxLabelDimensions = getMaxLabelDimensions;
@@ -239,13 +230,9 @@ function compose<T extends typeof Axis>(
         addEvent(AxisClass, 'afterTickSize', onAfterTickSize);
         addEvent(AxisClass, 'trimTicks', onTrimTicks);
         addEvent(AxisClass, 'destroy', onDestroy);
-    }
 
-    if (U.pushUnique(composedMembers, ChartClass)) {
         addEvent(ChartClass, 'afterSetChartSize', onChartAfterSetChartSize);
-    }
 
-    if (U.pushUnique(composedMembers, TickClass)) {
         addEvent(
             TickClass,
             'afterGetLabelPosition',
@@ -318,7 +305,7 @@ function getMaxLabelDimensions(
 
     // For tree grid, add indentation
     if (
-        this.options.type === 'treegrid' &&
+        this.type === 'treegrid' &&
         this.treeGrid &&
         this.treeGrid.mapOfPosToGridNode
     ) {
@@ -378,7 +365,7 @@ function onAfterGetTitlePosition(
     const gridOptions = options.grid || {};
 
     if (gridOptions.enabled === true) {
-        // compute anchor points for each of the title align options
+        // Compute anchor points for each of the title align options
         const {
             axisTitle,
             height: axisHeight,
@@ -404,8 +391,8 @@ function onAfterGetTitlePosition(
         // the position in the perpendicular direction of the axis
         const offAxis = (
             (horiz ? axisTop + axisHeight : axisLeft) +
-            (horiz ? 1 : -1) * // horizontal axis reverses the margin
-            (opposite ? -1 : 1) * // so does opposite axes
+            (horiz ? 1 : -1) * // Horizontal axis reverses the margin
+            (opposite ? -1 : 1) * // So does opposite axes
             crispCorr +
             (axis.side === GridAxisSide.bottom ? titleFontSize : 0)
         );
@@ -518,7 +505,7 @@ function onAfterRender(this: Axis): void {
             axisTitle.css({ width: `${firstTick.slotWidth}px` });
         }
 
-        // @todo acutual label padding (top, bottom, left, right)
+        // @todo actual label padding (top, bottom, left, right)
         axis.maxLabelDimensions = axis.getMaxLabelDimensions(
             axis.ticks,
             axis.tickPositions
@@ -548,7 +535,7 @@ function onAfterRender(this: Axis): void {
                     // Negate distance if top or left axis
                     // Subtract 1px to draw the line at the end of the tick
                     tickLength = (axis.tickSize('tick') || [1])[0],
-                    distance = (tickLength - 1) * ((
+                    distance = tickLength * ((
                         axis.side === GridAxisSide.top ||
                         axis.side === GridAxisSide.left
                     ) ? -1 : 1);
@@ -639,7 +626,7 @@ function onAfterRender(this: Axis): void {
                     });
                 }
 
-                // show or hide the line depending on options.showEmpty
+                // Show or hide the line depending on options.showEmpty
                 axis.axisLine[axis.showAxis ? 'show' : 'hide']();
             }
         }
@@ -737,7 +724,7 @@ function onAfterSetAxisTranslation(this: Axis): void {
                 (
                     (options.dateTimeLabelFormats[tickInfo.unitName] as any)
                         .range === false ||
-                    tickInfo.count > 1 // years
+                    tickInfo.count > 1 // Years
                 )
             ) {
                 options.labels.align = 'left';
@@ -750,7 +737,7 @@ function onAfterSetAxisTranslation(this: Axis): void {
             // Don't trim ticks which not in min/max range but
             // they are still in the min/max plus tickInterval.
             if (
-                this.options.type !== 'treegrid' &&
+                this.type !== 'treegrid' &&
                 axis.grid &&
                 axis.grid.columns
             ) {
@@ -783,7 +770,7 @@ function onAfterSetOptions(
     if (gridOptions.enabled === true) {
 
         // Merge the user options into default grid axis options so
-        // that when a user option is set, it takes presedence.
+        // that when a user option is set, it takes precedence.
         gridAxisOptions = merge<DeepPartial<AxisTypeOptions>>(true, {
 
             className: (
@@ -828,10 +815,10 @@ function onAfterSetOptions(
             },
 
             // In a grid axis, only allow one unit of certain types,
-            // for example we shouln't have one grid cell spanning
+            // for example we shouldn't have one grid cell spanning
             // two days.
             units: [[
-                'millisecond', // unit name
+                'millisecond', // Unit name
                 [1, 10, 100]
             ], [
                 'second',
@@ -880,7 +867,8 @@ function onAfterSetOptions(
                 defined(userOptions.linkedTo) &&
 
                 !defined(userOptions.tickPositioner) &&
-                !defined(userOptions.tickInterval)
+                !defined(userOptions.tickInterval) &&
+                !defined(userOptions.units)
             ) {
                 gridAxisOptions.tickPositioner = function (
                     min: number,
@@ -921,7 +909,7 @@ function onAfterSetOptions(
                         // In case the base X axis shows years, make the
                         // secondary axis show ten times the years (#11427)
                         } else if (parentInfo.unitName === 'year') {
-                            // unitName is 'year'
+                            // `unitName` is 'year'
                             count = parentInfo.count * 10;
                         }
 
@@ -1101,8 +1089,8 @@ function onTickAfterGetLabelPosition(
         gridOptions = options.grid || {},
         labelOpts = axis.options.labels,
         align = labelOpts.align,
-        // verticalAlign is currently not supported for axis.labels.
-        verticalAlign: string = 'middle', // labelOpts.verticalAlign,
+        // `verticalAlign` is currently not supported for axis.labels.
+        verticalAlign: string = 'middle', // LabelOpts.verticalAlign,
         side = GridAxisSide[axis.side],
         tickmarkOffset = e.tickmarkOffset,
         tickPositions = axis.tickPositions,
@@ -1167,14 +1155,14 @@ function onTickAfterGetLabelPosition(
                 left :
                 align === 'right' ?
                     right :
-                    left + ((right - left) / 2) // default to center
+                    left + ((right - left) / 2) // Default to center
         );
         e.pos.y = (
             verticalAlign === 'top' ?
                 top :
                 verticalAlign === 'bottom' ?
                     bottom :
-                    top + ((bottom - top) / 2) // default to middle
+                    top + ((bottom - top) / 2) // Default to middle
         );
 
         if (label) {
@@ -1268,7 +1256,6 @@ function onTickLabelFormat(ctx: AxisLabelFormatterContextObject): void {
  */
 function onTrimTicks(this: Axis): void {
     const axis = this,
-        chart = axis.chart,
         options = axis.options,
         gridOptions = options.grid || {},
         categoryAxis = axis.categories,
@@ -1459,7 +1446,7 @@ class GridAxisAdditions {
             options = axis.options,
             extraBorderLine = renderer.path(path)
                 .addClass('highcharts-axis-line')
-                .add(axis.axisBorder);
+                .add(axis.axisGroup);
 
         if (!renderer.styledMode) {
             extraBorderLine.attr({
@@ -1585,6 +1572,7 @@ export default GridAxis;
  * Set border color for the label grid lines.
  *
  * @type      {Highcharts.ColorString}
+ * @default   #e6e6e6
  * @apioption xAxis.grid.borderColor
  */
 
@@ -1607,4 +1595,4 @@ export default GridAxis;
  * @apioption xAxis.grid.cellHeight
  */
 
-''; // keeps doclets above in JS file
+''; // Keeps doclets above in JS file

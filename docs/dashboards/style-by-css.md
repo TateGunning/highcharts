@@ -1,18 +1,29 @@
 Style by CSS
 ===
 
-By default each Dashboard and its element is styled by CSS. It gives you the
+By default each Dashboard and most of its element is styled by CSS. It gives you the
 ability to change the look and feel of the dashboard. Most of the elements
 have classes that you can use to style them. You can also add your own classes
 or ids to the elements.
 
+If you prefer to use your own layout structure, feel free to use it as well. Only what you need is disable the gui by option. Please remember that each container should have an unique `id` for rendered component.
+
+```js
+    gui: {
+        enabled: false
+    }
+```
+
+[Here is the standalone demo](https://www.highcharts.com/samples/embed/dashboards/gui/custom-layout).
+[Here is the tailwind demo](https://www.highcharts.com/samples/embed/dashboards/gui/custom-layout-tailwind).
+
+*Please note that disabled GUI does not allow you to use the [Edit Mode](https://www.highcharts.com/docs/dashboards/edit-mode) module.
 
 ## Importing the CSS
 The CSS is not included in the library but you can import it like that:
 ```css
 @import url("https://code.highcharts.com/dashboards/css/dashboards.css");
-@import url("https://code.highcharts.com/css/highcharts.css");
-@import url("https://code.highcharts.com/datagrid/css/datagrid.css");
+@import url("https://code.highcharts.com/dashboards/css/datagrid.css");
 ```
 
 Note that each component has its own CSS file. You can import only the CSS
@@ -80,6 +91,7 @@ To style the dashboard's component subtitle:
 ```
 
 ### KPI Component
+
 To style the dashboard's KPI component div and its content:
 ```css
 .highcharts-dashboards-component-kpi {
@@ -94,11 +106,40 @@ To style the dashboard's KPI value:
 }
 ```
 
+To properly style the chart element of the KPI, you need to set the `styledMode` option to `true` in the component's configuration.
+```js
+{
+    type: 'KPI',
+    renderTo: 'kpi-container',
+    chartOptions: {
+        chart: {
+            styledMode: true
+        }
+        ...
+    }
+    ...
+}
+```
+
 ### Highcharts Component
 To style the dashboard's Highcharts component div and its content:
 ```css
 .highcharts-dashboards-component-highcharts {
     background-color: gray;
+}
+```
+To style the chart element of the Highcharts component, you need to set the `styledMode` option to `true` in the component's configuration.
+```js
+{
+    type: 'Highcharts',
+    renderTo: 'chart-container',
+    chartOptions: {
+        chart: {
+            styledMode: true
+        }
+        ...
+    }
+    ...
 }
 ```
 
@@ -146,7 +187,7 @@ See how the HTML component was configured and how the `id` and `class` were used
 ```ts
 {
     type: 'HTML',
-    cell: 'dashboard-row-1-cell-3',
+    renderTo: 'dashboard-row-1-cell-3',
     elements: [
         {
             tagName: 'div',

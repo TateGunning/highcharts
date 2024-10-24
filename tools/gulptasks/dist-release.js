@@ -4,10 +4,10 @@
 
 /* eslint func-style: 0, no-console: 0, max-len: 0 */
 const gulp = require('gulp');
-const log = require('./lib/log');
+const log = require('../libs/log');
 const fs = require('fs-extra');
 // const fs = require('fs');
-// const libFS = require('./lib/fs');
+// const libFS = require('../libs/fs');
 const { join } = require('path');
 const readline = require('readline');
 const argv = require('yargs').argv;
@@ -165,7 +165,7 @@ function copyFiles() {
     }];
 
     const files = {
-        'vendor/canvg.js': join(pathToDistRepo, 'lib/canvg.js'),
+        // 'vendor/canvg.js': join(pathToDistRepo, 'lib/canvg.js'),
         'vendor/jspdf.js': join(pathToDistRepo, 'lib/jspdf.js'),
         'vendor/jspdf.src.js': join(pathToDistRepo, 'lib/jspdf.src.js'),
         'vendor/svg2pdf.js': join(pathToDistRepo, 'lib/svg2pdf.js'),

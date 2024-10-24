@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -31,6 +31,8 @@ import type SVGRenderer from '../Core/Renderer/SVG/SVGRenderer';
 
 import D from '../Core/Defaults.js';
 const { setOptions } = D;
+import H from '../Core/Globals.js';
+const { composed } = H;
 import MapNavigationDefaults from './MapNavigationDefaults.js';
 import MapPointer from './MapPointer.js';
 import MapSymbols from './MapSymbols.js';
@@ -58,14 +60,6 @@ declare module '../Core/Chart/ChartLike' {
 
 /* *
  *
- *  Constants
- *
- * */
-
-const composedMembers: Array<unknown> = [];
-
-/* *
- *
  *  Functions
  *
  * */
@@ -75,12 +69,8 @@ const composedMembers: Array<unknown> = [];
  */
 function stopEvent(e: Event): void {
     if (e) {
-        if (e.preventDefault) {
-            e.preventDefault();
-        }
-        if (e.stopPropagation) {
-            e.stopPropagation();
-        }
+        e.preventDefault?.();
+        e.stopPropagation?.();
         e.cancelBubble = true;
     }
 }
@@ -119,7 +109,7 @@ class MapNavigation {
         MapPointer.compose(PointerClass);
         MapSymbols.compose(SVGRendererClass);
 
-        if (pushUnique(composedMembers, MapChartClass)) {
+        if (pushUnique(composed, 'Map.Navigation')) {
             // Extend the Chart.render method to add zooming and panning
             addEvent(MapChartClass, 'beforeRender', function (
                 this: MapChart
@@ -129,9 +119,7 @@ class MapNavigation {
                 this.mapNavigation = new MapNavigation(this);
                 this.mapNavigation.update();
             });
-        }
 
-        if (pushUnique(composedMembers, setOptions)) {
             setOptions(MapNavigationDefaults);
         }
 
@@ -148,7 +136,6 @@ class MapNavigation {
     ) {
         this.chart = chart;
         this.navButtons = [];
-        this.init(chart);
     }
 
     /* *
@@ -156,9 +143,10 @@ class MapNavigation {
      *  Properties
      *
      * */
+
     public chart: MapChart;
     public navButtons: Array<SVGElement>;
-    public navButtonsGroup: SVGElement = void 0 as any;
+    public navButtonsGroup!: SVGElement;
     public unbindDblClick?: Function;
     public unbindMouseWheel?: Function;
 
@@ -167,22 +155,6 @@ class MapNavigation {
      *  Functions
      *
      * */
-
-    /**
-     * Initialize function.
-     *
-     * @function MapNavigation#init
-     *
-     * @param {Highcharts.Chart} chart
-     *        The Chart instance.
-     *
-     * @return {void}
-     */
-    public init(
-        chart: MapChart
-    ): void {
-        this.chart = chart;
-    }
 
     /**
      * Update the map navigation with new options. Calling this is the same as
@@ -207,8 +179,7 @@ class MapNavigation {
                 stopEvent(e as any); // Stop default click event (#4444)
             };
 
-        let navOptions = chart.options.mapNavigation as MapNavigationOptions,
-            attr: ButtonThemeObject;
+        let navOptions = chart.options.mapNavigation as MapNavigationOptions;
 
         // Merge in new options in case of update, and register back to chart
         // options.
@@ -219,7 +190,7 @@ class MapNavigation {
 
         // Destroy buttons in case of dynamic update
         while (navButtons.length) {
-            (navButtons.pop() as any).destroy();
+            navButtons.pop()?.destroy();
         }
 
         if (
@@ -229,19 +200,23 @@ class MapNavigation {
             if (!mapNav.navButtonsGroup) {
                 mapNav.navButtonsGroup = chart.renderer.g()
                     .attr({
-                        zIndex: 4 // #4955, // #8392
+                        zIndex: 7 // #4955, #8392, #20476
                     })
                     .add();
             }
             objectEach(navOptions.buttons, (
                 buttonOptions: MapNavigationButtonOptions,
-                n: string
+                n: 'zoomIn'|'zoomOut'
             ): void => {
                 buttonOptions = merge(navOptions.buttonOptions, buttonOptions);
 
+                const attr: ButtonThemeObject = {
+                    padding: buttonOptions.padding
+                };
+
                 // Presentational
                 if (!chart.styledMode && buttonOptions.theme) {
-                    attr = buttonOptions.theme;
+                    extend(attr, buttonOptions.theme);
                     attr.style = merge(
                         buttonOptions.theme.style,
                         buttonOptions.style // #3203
@@ -276,8 +251,7 @@ class MapNavigation {
                     .attr({
                         width,
                         height,
-                        title: (chart.options.lang as any)[n],
-                        padding: buttonOptions.padding,
+                        title: chart.options.lang[n],
                         zIndex: 5
                     })
                     .add(mapNav.navButtonsGroup);
@@ -354,8 +328,7 @@ class MapNavigation {
             // Check the mapNavigation buttons collision with exporting button
             // and translate the mapNavigation button if they overlap.
             const adjustMapNavBtn = function (): void {
-                const expBtnBBox =
-                        chart.exportingGroup && chart.exportingGroup.getBBox();
+                const expBtnBBox = chart.exportingGroup?.getBBox();
 
                 if (expBtnBBox) {
                     const navBtnsBBox = mapNav.navButtonsGroup.getBBox();

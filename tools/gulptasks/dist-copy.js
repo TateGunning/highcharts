@@ -171,7 +171,6 @@ const VENDOR_DIRECTORY = 'vendor';
 const VENDOR_FILTER = [
     'canvg',
     'jspdf',
-    'rgbcolor',
     'svg2pdf'
 ].map(
     filePath => Path.join(VENDOR_DIRECTORY, filePath + '.')
@@ -191,8 +190,8 @@ const VENDOR_FILTER = [
  */
 function distCopy() {
 
-    const FsLib = require('./lib/fs');
-    const LogLib = require('./lib/log');
+    const FsLib = require('../libs/fs');
+    const LogLib = require('../libs/log');
 
     return new Promise(resolve => {
 

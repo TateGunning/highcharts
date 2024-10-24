@@ -3,7 +3,7 @@
  * @module highcharts/highcharts-more
  * @requires highcharts
  *
- * (c) 2009-2021 Torstein Honsi
+ * (c) 2009-2024 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
@@ -22,10 +22,12 @@ import '../Series/Gauge/GaugeSeries.js';
 import PackedBubbleSeries from '../Series/PackedBubble/PackedBubbleSeries.js';
 import '../Series/Polygon/PolygonSeries.js';
 import PolarAdditions from '../Series/PolarComposition.js';
+import RadialAxis from '../Core/Axis/RadialAxis.js';
 import WaterfallSeries from '../Series/Waterfall/WaterfallSeries.js';
 const G: AnyRecord = Highcharts;
-BubbleSeries.compose(G.Axis, G.Chart, G.Legend, G.Series);
-PackedBubbleSeries.compose(G.Axis, G.Chart, G.Legend, G.Series);
+G.RadialAxis = RadialAxis;
+BubbleSeries.compose(G.Axis, G.Chart, G.Legend);
+PackedBubbleSeries.compose(G.Axis, G.Chart, G.Legend);
 Pane.compose(G.Chart, G.Pointer);
 PolarAdditions.compose(
     G.Axis,
@@ -33,9 +35,11 @@ PolarAdditions.compose(
     G.Pointer,
     G.Series,
     G.Tick,
+    G.Point,
     SeriesRegistry.seriesTypes.areasplinerange,
     SeriesRegistry.seriesTypes.column,
     SeriesRegistry.seriesTypes.line,
     SeriesRegistry.seriesTypes.spline
 );
 WaterfallSeries.compose(G.Axis, G.Chart);
+export default G;
