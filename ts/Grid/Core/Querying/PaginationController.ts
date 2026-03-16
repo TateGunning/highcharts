@@ -117,7 +117,7 @@ class PaginationController {
             return;
         }
 
-        this.currentPage = totalPages === 0 ? 0 : totalPages;
+        this.currentPage = Math.min(this.currentPage, totalPages);
         this.querying.shouldBeUpdated = true;
     }
 
