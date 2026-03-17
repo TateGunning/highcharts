@@ -17,6 +17,7 @@ a:hover {
 
 .chart-container {
     width: 100%;
+    width: 295px;
     height: 260px !important;
     overflow: hidden;
 }
