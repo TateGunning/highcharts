@@ -824,13 +824,13 @@ addEvent(WaterfallSeries, 'afterColumnTranslate', function (): void {
                         true
                     ) - box.y :
                     yAxis.translate(
-                        previousY,
+                        previousY + yValue,
                         false,
                         true,
                         false,
                         true
                     ) - yAxis.translate(
-                        previousY - yValue,
+                        previousY,
                         false,
                         true,
                         false,

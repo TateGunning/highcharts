@@ -1,5 +1,5 @@
 QUnit.test('General waterfall tests', function (assert) {
-    var chart = Highcharts.chart('container', {
+    const chart = Highcharts.chart('container', {
         chart: {
             type: 'waterfall'
         },
@@ -99,5 +99,42 @@ QUnit.test('General waterfall tests', function (assert) {
         chart.series[0].getGraphPath().length,
         2,
         'Graph path should not be drawn for points outside of the extremes.'
+    );
+});
+
+QUnit.test('Waterfall series with broken axis', function (assert) {
+    const chart = Highcharts.chart('container', {
+        chart: {
+            type: 'waterfall'
+        },
+        yAxis: {
+            breaks: [{
+                from: -10,
+                to: -5,
+                breakSize: 1
+            }]
+        },
+        series: [{
+            data: [{
+                y: -12
+            }, {
+                y: -5
+            }]
+        }]
+    });
+
+    assert.close(
+        chart.series[0].points[0].graphic.attr('height'),
+        chart.yAxis[0].toPixels(-12, true),
+        0.5,
+        `First point that is crossing the axis break should have correct height,
+        #22330.`
+    );
+
+    assert.close(
+        chart.series[0].points[1].graphic.attr('y'),
+        chart.series[0].points[0].graphic.attr('height'),
+        0.5,
+        'Second point should start where the first point ends, #22330.'
     );
 });
