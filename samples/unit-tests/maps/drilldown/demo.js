@@ -532,8 +532,7 @@ QUnit.test(
                 'https://code.highcharts.com/mapdata/countries/us/us-ca-all.topo.json'
             ).then(response => response.json()),
             mapView = usTopology.objects.default['hc-recommended-mapview'],
-            usData = Highcharts.geojson(usTopology),
-            duration = 100;
+            usData = Highcharts.geojson(usTopology);
 
         usData.forEach((d, i) => {
             d.drilldown = d.properties['hc-key'] === 'us-ca' ?
@@ -546,74 +545,65 @@ QUnit.test(
             d.value = i;
         });
 
-        let clock = null;
-        try {
-            clock = TestUtilities.lolexInstall();
-            const chart = Highcharts.mapChart('container', {
-                mapView,
-                drilldown: {
-                    animation: { duration },
-                    mapZooming: true,
-                    series: [{
-                        id: 'california',
-                        name: 'California',
-                        mapData: caTopology,
-                        data: caData,
-                        dataLabels: { enabled: true, format: '{point.name}' }
-                    }]
-                },
+        const chart = Highcharts.mapChart('container', {
+            chart: { animation: false },
+            mapView,
+            drilldown: {
+                animation: false,
+                mapZooming: true,
                 series: [{
-                    data: usData,
-                    name: 'USA',
-                    custom: { mapView }
-                }, {
-                    type: 'mappoint',
-                    zIndex: 4,
-                    dataLabels: { enabled: true },
-                    data: [{ lon: -118.24, lat: 34.05, name: 'LA' }]
+                    id: 'california',
+                    name: 'California',
+                    mapData: caTopology,
+                    data: caData,
+                    dataLabels: { enabled: true, format: '{point.name}' }
                 }]
-            });
+            },
+            series: [{
+                data: usData,
+                name: 'USA',
+                custom: { mapView }
+            }, {
+                type: 'mappoint',
+                zIndex: 4,
+                dataLabels: { enabled: true },
+                data: [{ lon: -118.24, lat: 34.05, name: 'LA' }]
+            }]
+        });
 
-            const mappointSeries = chart.series[1];
-            assert.ok(
-                mappointSeries.dataLabelsGroup,
-                'Mappoint should have dataLabelsGroup initially.'
-            );
+        const mappointSeries = chart.series[1];
+        assert.ok(
+            mappointSeries.dataLabelsGroup,
+            'Mappoint should have dataLabelsGroup initially.'
+        );
 
-            const caPoint = chart.series[0].points.find(
-                p => (
-                    p.drilldown === 'california' ||
-                    p.options?.drilldown === 'california'
-                )
-            );
-            assert.ok(!!caPoint, 'California point should exist');
-            if (caPoint) {
-                if (caPoint.doDrilldown) {
-                    caPoint.doDrilldown();
-                } else {
-                    caPoint.firePointEvent('click');
-                }
+        const caPoint = chart.series[0].points.find(
+            p => (
+                p.drilldown === 'california' ||
+                p.options?.drilldown === 'california'
+            )
+        );
+        assert.ok(!!caPoint, 'California point should exist');
+        if (caPoint) {
+            if (caPoint.doDrilldown) {
+                caPoint.doDrilldown();
+            } else {
+                caPoint.firePointEvent('click');
             }
-
-            setTimeout(() => {
-                chart.drillUp();
-
-                setTimeout(() => {
-                    assert.ok(
-                        mappointSeries.dataLabelsGroups?.length,
-                        'Mappoint should have dataLabelsGroups after drill up.'
-                    );
-                    assert.ok(
-                        mappointSeries.group?.attr('opacity') !== 0,
-                        'Mappoint group should be visible after drill up.'
-                    );
-                    TestUtilities.lolexRunAndUninstall(clock);
-                }, duration * 2);
-            }, duration * 2);
-        } finally {
-            TestUtilities.lolexUninstall(clock);
-            delete usTopology.objects.default['hc-decoded-geojson'];
-            delete caTopology.objects.default['hc-decoded-geojson'];
         }
+
+        chart.drillUp();
+
+        assert.ok(
+            mappointSeries.dataLabelsGroups?.length,
+            'Mappoint should have dataLabelsGroups after drill up.'
+        );
+        assert.ok(
+            mappointSeries.group?.attr('opacity') !== 0,
+            'Mappoint group should be visible after drill up.'
+        );
+
+        delete usTopology.objects.default['hc-decoded-geojson'];
+        delete caTopology.objects.default['hc-decoded-geojson'];
     }
 );
