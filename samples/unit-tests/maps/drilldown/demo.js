@@ -603,7 +603,5 @@ QUnit.test(
             'Mappoint group should be visible after drill up.'
         );
 
-        delete usTopology.objects.default['hc-decoded-geojson'];
-        delete caTopology.objects.default['hc-decoded-geojson'];
     }
 );
