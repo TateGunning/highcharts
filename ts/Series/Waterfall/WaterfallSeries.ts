@@ -711,23 +711,20 @@ addEvent(WaterfallSeries, 'afterColumnTranslate', function (): void {
 
                 point.below = yPos <= threshold;
 
-                const translatedYPos = yAxis.translate(
+                box.y = yAxis.translate(
                     yPos,
                     false,
                     true,
                     false,
                     true
                 );
-                const translatedHPos = yAxis.translate(
+                box.height = yAxis.translate(
                     hPos,
                     false,
                     true,
                     false,
                     true
-                );
-
-                box.y = translatedYPos;
-                box.height = translatedHPos - translatedYPos;
+                ) - box.y;
 
                 const dummyStackItem = yAxis.waterfall?.dummyStackItem;
                 if (dummyStackItem) {
