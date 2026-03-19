@@ -52,7 +52,7 @@ QUnit.test(
 
         assert.strictEqual(
             chart.series[0].legendItem.symbol.height,
-            0,
+            void 0,
             `There should be no symbol when legend.symbolHeight is set to 0
             for column chart (squareSymbol is set to true) (#16516).`
         );

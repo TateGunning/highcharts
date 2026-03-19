@@ -5139,29 +5139,38 @@ class Series {
      */
     public drawLegendSymbol(legend: Legend, item: Legend.Item): void {
         const renderer = this.chart.renderer,
-            legendSymbol = this.options.legendSymbol,
-            symbol = (!legendSymbol || legendSymbol === 'rectangle') ?
-                'square' : legendSymbol;
+            legendSymbol = this.options.legendSymbol || 'rectangle',
+            legendItem = item.legendItem || {},
+            { options, symbolHeight, symbolWidth } = legend,
+            squareSymbol = options.squareSymbol,
+            adjustedSymbolWidth = squareSymbol ? symbolHeight : symbolWidth,
+            x = squareSymbol ? (symbolWidth - symbolHeight) / 2 : 0,
+            y = (legend.baseline || 0) - symbolHeight + 1,
+            w = adjustedSymbolWidth,
+            h = symbolHeight,
+            r = options.symbolRadius ?? symbolHeight;
 
-        // Basic symbol
-        if (
-            symbol &&
-            renderer.symbols[symbol as keyof typeof renderer.symbols]
-        ) {
-            const legendItem = item.legendItem || {},
-                { options, symbolHeight, symbolWidth } = legend,
-                squareSymbol = options.squareSymbol,
-                adjustedSymbolWidth = squareSymbol ? symbolHeight : symbolWidth;
-
-            legendItem.symbol = renderer
-                .symbol(
-                    symbol as keyof typeof renderer.symbols,
-                    squareSymbol ? (symbolWidth - symbolHeight) / 2 : 0,
-                    (legend.baseline || 0) - symbolHeight + 1,
-                    adjustedSymbolWidth,
-                    symbolHeight,
-                    { r: options.symbolRadius ?? symbolHeight / 2 }
+        const symbol: SVGElement|undefined = legendSymbol === 'rectangle' ?
+            // For the rectangle, use a true `rect` element because it renders
+            // sharper than a symbol with `path` and arcs
+            renderer.rect(x, y, w, h, r) :
+            (
+                renderer.symbols[
+                    legendSymbol as keyof typeof renderer.symbols
+                ] &&
+                renderer.symbol(
+                    legendSymbol as keyof typeof renderer.symbols,
+                    x,
+                    y,
+                    w,
+                    h,
+                    { r }
                 )
+            );
+
+        // Rectangle or SVGRenderer symbol
+        if (symbol) {
+            legendItem.symbol = symbol
                 .addClass('highcharts-point')
                 .attr({
                     zIndex: 3
