@@ -11,6 +11,7 @@ function isHighchartsHost(urlString) {
     }
 
     try {
+        // eslint-disable-next-line max-len
         const base = (typeof window !== 'undefined' && window.location && window.location.origin) ?
             window.location.origin :
             'https://highcharts.com';
@@ -29,6 +30,7 @@ function isHighchartsHost(urlString) {
         ];
 
         return allowedHosts.indexOf(hostname) !== -1;
+    // eslint-disable-next-line no-unused-vars
     } catch (e) {
         return false;
     }
@@ -1575,7 +1577,7 @@ function activity() {
 
     (async () => {
         const weeks = await fetch(
-            'https://cdn.jsdelivr.net/gh/highcharts/highcharts@4dc715c/samples/data/json-sources/github_commit_activity.json'
+            'https://cdn.jsdelivr.net/gh/highcharts/highcharts@4dc715c/samples/data/github_commit_activity.json'
 
 
         ).then(res => res.json());

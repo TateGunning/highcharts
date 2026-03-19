@@ -1444,11 +1444,13 @@ function buildDemo() {
         ${product.name}`;
         let isHighchartsIcon = false;
         try {
+            // eslint-disable-next-line max-len
             const iconUrl = new URL(product.icon, window.location && window.location.origin ? window.location.origin : undefined);
             const hostname = iconUrl.hostname || '';
             isHighchartsIcon =
                 hostname === 'highcharts.com' ||
                 hostname.endsWith('.highcharts.com');
+        // eslint-disable-next-line no-unused-vars
         } catch (e) {
             isHighchartsIcon = false;
         }

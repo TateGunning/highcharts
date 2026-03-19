@@ -1182,7 +1182,7 @@ function heatmap() {
     Highcharts.chart('container', {
 
         data: {
-            csv: document.getElementById('csv').innerHTML
+            csv: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@4dc715c/samples/data/large-heatmap.csv'
         },
 
         chart: {
@@ -1828,6 +1828,7 @@ function buildDemo() {
         try {
             const iconUrl = new URL(
                 product.icon,
+                // eslint-disable-next-line max-len
                 (typeof window !== 'undefined' && window.location && window.location.origin) ?
                     window.location.origin :
                     'https://highcharts.com'
@@ -1840,6 +1841,7 @@ function buildDemo() {
             if (allowedHosts.indexOf(iconUrl.hostname) !== -1) {
                 isHighchartsIcon = true;
             }
+        // eslint-disable-next-line no-unused-vars
         } catch (e) {
             isHighchartsIcon = false;
         }
