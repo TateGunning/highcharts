@@ -1352,7 +1352,8 @@ function stockWithAnnotations() {
                 {
                     draggable: '',
                     labelOptions: {
-                        shape: 'connector'
+                        shape: 'connector',
+                        useHTML: true
                     },
                     className: 'events-annotations',
                     labels: [

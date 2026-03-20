@@ -877,9 +877,9 @@ button.dot {
     stroke: #c00;
 }
 
-.events-annotations .highcharts-annotation-label text {
-    fill: var(--highcharts-neutral-color-100);
-    font-size: 0.8em;
+.events-annotations .highcharts-annotation-label span {
+    background-color: light-dark(#fffc, transparent);
+    font-size: 0.9em;
 }
 
 /* map chart */
