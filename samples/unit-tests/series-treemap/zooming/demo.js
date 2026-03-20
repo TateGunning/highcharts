@@ -67,6 +67,18 @@ QUnit.test(
             'xAxis.max is correct according to zoom'
         );
 
+        assert.strictEqual(
+            chart.series[0].points[1].dataLabel.visibility,
+            'hidden',
+            'Data label outside of zoomed range should not be visible, #24220.'
+        );
+
+        assert.strictEqual(
+            chart.series[0].points[2].dataLabel.visibility,
+            'inherit',
+            'Data label inside of zoomed range should be visible, #24220.'
+        );
+
         // When allowDrillToNode the extremes should be the same as the point
         // values of the root node.
         chart.series[0].update({
