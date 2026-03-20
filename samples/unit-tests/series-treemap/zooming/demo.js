@@ -49,7 +49,8 @@ QUnit.test(
                     text: 'Highcharts Treemap'
                 }
             }),
-            xAxis = chart.xAxis[0];
+            xAxis = chart.xAxis[0],
+            points = chart.series[0].points;
         let extremes;
 
         // Zoom should work when enabled
@@ -68,14 +69,21 @@ QUnit.test(
         );
 
         assert.strictEqual(
-            chart.series[0].points[1].dataLabel.visibility,
+            points[1].dataLabel.visibility &&
+            points[1].dataLabel.getStyle('visibility'),
             'hidden',
             'Data label outside of zoomed range should not be visible, #24220.'
         );
 
         assert.strictEqual(
-            chart.series[0].points[2].dataLabel.visibility,
+            points[2].dataLabel.visibility,
             'inherit',
+            'Data label inside of zoomed range should be visible, #24220.'
+        );
+
+        assert.strictEqual(
+            points[2].dataLabel.getStyle('visibility'),
+            'visible',
             'Data label inside of zoomed range should be visible, #24220.'
         );
 
