@@ -442,6 +442,14 @@ class ColorAxis extends Axis implements ColorAxisBase {
         let titleHeight = 0;
         let titleWidth = 0;
 
+        if (axis.options.title?.text && !axis.axisTitle) {
+            if (!axis.axisGroup) {
+                axis.axisParent = legendItem.group;
+                axis.createGroups();
+            }
+            axis.addTitle(true);
+        }
+
         if (axis.axisTitle) {
             const titleBBox = axis.axisTitle.getBBox();
             titleHeight = titleBBox.height;
