@@ -20,20 +20,17 @@ async function langBuild() {
     const LANG_DIR = join('i18n', 'highcharts');
     const TS_FOLDER = join('ts', 'masters', 'i18n');
 
-
     const langBase = require(resolve(LANG_DIR, 'lang.json'));
     const baseKeys = Object.keys(langBase);
 
-
     function getNestedKeys(obj, path = '') {
-        return Object.entries(obj)
-            .flatMap(([key, value]) => {
-                if (typeof value === 'object') {
-                    return getNestedKeys(value, `${path}${key}.`);
-                }
+        return Object.entries(obj).flatMap(([key, value]) => {
+            if (typeof value === 'object') {
+                return getNestedKeys(value, `${path}${key}.`);
+            }
 
-                return `${path}${key}`;
-            });
+            return `${path}${key}`;
+        });
     }
 
     const nestedBaseKeys = getNestedKeys(langBase).sort();
@@ -44,21 +41,23 @@ async function langBuild() {
         })
     )
         .filter(
-            dirent => dirent.isFile() &&
-            dirent.name !== 'lang.json' &&
-            dirent.name.endsWith('.json')
+            dirent =>
+                dirent.isFile() &&
+        dirent.name !== 'lang.json' &&
+        dirent.name.endsWith('.json')
         )
         .map(dirent => dirent.name);
 
     // eslint-disable-next-line
-    const template = (jsonContent, lang) => `/**
+  const template = (jsonContent, lang) => `// SPDX-License-Identifier: LicenseRef-Highcharts
+/**
 * @license Highcharts JS v@product.version@ (@product.date@)
 * @module highcharts/i18n/${lang}
 * @requires highcharts
 *
 * ${lang} language pack
 *
-* (c) 2009-2025 Highsoft AS
+* (c) 2009-2026 Highsoft AS
 *
 * A commercial license may be required depending on use.
 * See www.highcharts.com/license
@@ -79,7 +78,6 @@ setOptions({
 // Export Highcharts
 export default D;
 `;
-
 
     for (const langFile of langFiles) {
         const jsonContent = require(resolve(LANG_DIR, langFile));
@@ -123,10 +121,7 @@ export default D;
             `${langFile.replace('.json', '')}.src.ts`
         );
 
-        await writeFile(
-            outputFile,
-            tsContent
-        ).catch(e => {
+        await writeFile(outputFile, tsContent).catch(e => {
             log.error(`Error writing ${outputFile}: ${e.message}`);
 
             throw e;
@@ -134,13 +129,13 @@ export default D;
 
         log.success(`Created ${outputFile}`);
     }
-
 }
 
 gulp.task('lang-build', langBuild);
 
-gulp.task('lang-build:watch', () => gulp.watch(['i18n/**/*.json'], cb => {
-    log.message('Language files changed, rebuilding...');
-    langBuild();
-    cb();
-}));
+gulp.task('lang-build:watch', () =>
+    gulp.watch(['i18n/**/*.json'], cb => {
+        log.message('Language files changed, rebuilding...');
+        langBuild();
+        cb();
+    }));
