@@ -68,17 +68,8 @@ export function compose(
  */
 function initResizeObserver(this: Grid): void {
     destroyResizeObserver.call(this);
-    if (!this.container) {
+    if (!this.contentWrapper) {
         return;
-    }
-
-    const display = getComputedStyle(this.container).display;
-    if (display === 'inline' || display === 'none') {
-        console.warn( // eslint-disable-line no-console
-            'Highcharts Grid: Responsive rules rely on ResizeObserver, ' +
-            'which does not observe elements with display: ' + display +
-            '. Use a block-level display value instead.'
-        );
     }
 
     this.activeRules = new Set();
@@ -87,7 +78,7 @@ function initResizeObserver(this: Grid): void {
         onResize.call(this, entries[0]);
     });
 
-    this.resizeObserver.observe(this.container);
+    this.resizeObserver.observe(this.contentWrapper);
 }
 
 /**
