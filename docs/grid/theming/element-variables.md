@@ -42,7 +42,7 @@ In this case, all inputs use `6px` radius globally, while inputs in pagination a
 | --hcg-input-border-radius      | 0                              | [border-radius](https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius) |
 | --hcg-input-border-width       | 1px                            | [border-width](https://developer.mozilla.org/en-US/docs/Web/CSS/border-width) |
 | --hcg-input-border-style       | solid                          | [border-style](https://developer.mozilla.org/en-US/docs/Web/CSS/border-style) |
-| --hcg-input-border-color       | `currentColor`                 | [border-color](https://developer.mozilla.org/en-US/docs/Web/CSS/border-color) |
+| --hcg-input-border-color       | --hcg-input-color                  | [border-color](https://developer.mozilla.org/en-US/docs/Web/CSS/border-color) |
 | --hcg-input-background         | #ffffff/#141414              | [background](https://developer.mozilla.org/en-US/docs/Web/CSS/background) |
 | --hcg-input-hover-color        | --hcg-input-color              | [color](https://developer.mozilla.org/en-US/docs/Web/CSS/color) |
 | --hcg-input-hover-background   | --hcg-input-background         | [background](https://developer.mozilla.org/en-US/docs/Web/CSS/background) |
@@ -86,7 +86,7 @@ Inputs inherit surrounding typography by default. That means header inputs follo
 | --hcg-button-border-radius          | 0                              | [border-radius](https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius) |
 | --hcg-button-border-width           | 1px                            | [border-width](https://developer.mozilla.org/en-US/docs/Web/CSS/border-width) |
 | --hcg-button-border-style           | solid                          | [border-style](https://developer.mozilla.org/en-US/docs/Web/CSS/border-style) |
-| --hcg-button-border-color           | `currentColor`                 | [border-color](https://developer.mozilla.org/en-US/docs/Web/CSS/border-color) |
+| --hcg-button-border-color           | --hcg-button-color                  | [border-color](https://developer.mozilla.org/en-US/docs/Web/CSS/border-color) |
 | --hcg-button-background             | transparent                    | [background](https://developer.mozilla.org/en-US/docs/Web/CSS/background) |
 | --hcg-button-hover-color            | #ffffff/#000000                | [color](https://developer.mozilla.org/en-US/docs/Web/CSS/color) |
 | --hcg-button-hover-background       | #000000/#ffffff                | [background](https://developer.mozilla.org/en-US/docs/Web/CSS/background) |
