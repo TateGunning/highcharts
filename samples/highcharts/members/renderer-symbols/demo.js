@@ -91,7 +91,7 @@ Object.keys(Highcharts.SVGRenderer.prototype.symbols)
             .translate(padding, padding)
             .attr({
                 fill: '#2caffe88',
-                stroke: '#000',
+                stroke: 'var(--highcharts-neutral-color-100)',
                 'stroke-width': 1
             }).add();
     });
