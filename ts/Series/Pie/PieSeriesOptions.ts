@@ -98,7 +98,7 @@ export interface PieSeriesOptions extends LineSeriesOptions {
      * The color of the border surrounding each slice. When `null`, the
      * border takes the same color as the slice fill. This can be used
      * together with a `borderWidth` to fill drawing gaps created by
-     * antialiazing artefacts in borderless pies.
+     * antialiasing artifacts in borderless pies.
      *
      * In styled mode, the border stroke is given in the `.highcharts-point`
      * class.
@@ -106,7 +106,7 @@ export interface PieSeriesOptions extends LineSeriesOptions {
      * @sample {highcharts} highcharts/plotoptions/pie-bordercolor-black/
      *         Black border
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      *
      * @default #ffffff
      *
@@ -185,7 +185,7 @@ export interface PieSeriesOptions extends LineSeriesOptions {
      * @sample {highcharts} highcharts/plotoptions/pie-emptyseries/
      *         Empty pie series
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      *
      * @default ${palette.neutralColor20}
      */
@@ -201,7 +201,7 @@ export interface PieSeriesOptions extends LineSeriesOptions {
      * @sample {highcharts} highcharts/demo/pie-monochrome/
      *         Set default colors for all pies
      *
-     * @type {Array<Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject>}
+     * @type {Array<Highcharts.ColorType>}
      *
      * @since 3.0
      *
@@ -309,7 +309,7 @@ export interface PieSeriesOptions extends LineSeriesOptions {
      * @sample {highcharts} highcharts/plotoptions/pie-emptyseries/
      *         Empty pie series
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     fillColor?: ColorType;
 
