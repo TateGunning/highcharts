@@ -89,8 +89,8 @@
         border-color: var(--ig-button-border-color);
         border-radius: var(--ig-button-border-radius);
 
-        &.hcg-button-selected:not(.hcg-icon-button),
-        &.hcg-button-selected:not(.hcg-icon-button):hover:not(thead th *) {
+        &.hcg-button-selected,
+        &.hcg-button-selected:hover:not(thead th *) {
             color: var(--ig-button-selected-color);
             background: var(--ig-button-selected-background);
             border-color: var(--ig-button-selected-border-color);

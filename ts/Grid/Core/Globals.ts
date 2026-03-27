@@ -86,7 +86,6 @@ export const rawClassNames = {
     loadingMessage: 'loading-message',
     popup: 'popup',
     button: 'button',
-    iconButton: 'icon-button',
     buttonSelected: 'button-selected',
     buttonHighlighted: 'button-highlighted',
     input: 'input',
