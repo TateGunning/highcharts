@@ -1194,11 +1194,27 @@ export class Exporting {
 
                     if (item.separator) {
                         element = createElement(
-                            'hr',
-                            void 0,
+                            'li',
+                            {
+                                className:
+                                'highcharts-separator',
+                                role: 'separator'
+                            },
                             void 0,
                             innerMenu
                         );
+
+                        if (!chart.styledMode) {
+                            css(element, {
+                                border: 'none',
+                                backgroundColor:
+                                'var(--highcharts-neutral-color-80)',
+                                height: '0.5px',
+                                margin: '10px 0',
+                                padding: 0,
+                                'pointer-events': 'none'
+                            });
+                        }
                     } else {
                         // When chart initialized with the table, wrong button
                         // text displayed, #14352.
