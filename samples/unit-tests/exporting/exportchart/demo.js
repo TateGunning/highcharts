@@ -139,5 +139,40 @@ is set in exporting.chartConfig.`
 
     // Restore original functions
     Highcharts.Exporting.inlineFonts = originalInlineFonts;
+
+    const originalFetch = window.fetch;
+    let fetchAttemptedForCrossOrigin = false;
+
+    window.fetch = function (url) {
+        if (typeof url === 'string' && url.includes('fonts.googleapis.com')) {
+            fetchAttemptedForCrossOrigin = true;
+        }
+        return originalFetch.apply(this, arguments);
+    };
+
+    try {
+        const dummySvg = document.createElementNS(
+            'http://www.w3.org/2000/svg', 'svg'
+        );
+        await Highcharts.Exporting.inlineFonts(dummySvg);
+
+        assert.notOk(
+            fetchAttemptedForCrossOrigin,
+            'Should not attempt to fetch cross-origin stylesheets ' +
+            '(Origin Gate working).'
+        );
+        assert.ok(
+            true,
+            'inlineFonts completed successfully without a CORS SecurityError ' +
+            ' crash (#23589).'
+        );
+    } catch (e) {
+        assert.notOk(
+            true, 'inlineFonts threw an unexpected error: ' + e.message
+        );
+    } finally {
+        window.fetch = originalFetch;
+    }
+
     linkElement.remove();
 });
