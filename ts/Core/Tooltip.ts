@@ -1215,11 +1215,13 @@ class Tooltip {
                         // (#6659)
                         if (!options.style.width || styledMode) {
                             label.css({
+                                // Subtract padding on both sides so the box
+                                // stays within the available space (#24104)
                                 width: (
                                     this.outside ?
                                         this.getPlayingField() :
                                         chart.spacingBox
-                                ).width + 'px'
+                                ).width - 2 * options.padding + 'px'
                             });
                         }
 
