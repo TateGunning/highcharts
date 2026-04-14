@@ -430,22 +430,51 @@ export class Exporting {
     /** @internal */
     private static async handleStyleSheet(
         sheet: CSSStyleSheet,
-        resultArray: string[]
+        resultArray: string[],
+        visited: Set<string> = new Set()
     ): Promise<void> {
+        const href = sheet.href;
+
+        if (href) {
+            if (visited.has(href)) {
+                return;
+            }
+            visited.add(href);
+
+            try {
+                const sheetOrigin = new URL(href, doc.baseURI).origin;
+                if (sheetOrigin !== win.location.origin) {
+                    // We skip all cross-origin stylesheets on purpose.
+                    // This prevents DOM SecurityErrors and unhandled network
+                    // rejections when the browser blocks cssRules access.
+                    return;
+                }
+            } catch {
+                // URL parsing failed, proceed to try/catch
+            }
+        }
+
         try {
             for (const rule of Array.from(sheet.cssRules)) {
                 if (rule instanceof CSSImportRule) {
-                    const sheet = await Exporting.fetchCSS(rule.href);
-                    if (sheet) {
-                        await Exporting.handleStyleSheet(sheet, resultArray);
+                    try {
+                        const importedSheet =
+                        await Exporting.fetchCSS(rule.href);
+                        if (importedSheet) {
+                            await Exporting.handleStyleSheet(
+                                importedSheet, resultArray, visited
+                            );
+                        }
+                    } catch {
+                        // Silently ignore CORS errors on imported stylesheets
                     }
                 }
 
                 if (rule instanceof CSSFontFaceRule) {
                     let cssText = rule.cssText;
 
-                    if (sheet.href) {
-                        const baseUrl = sheet.href,
+                    if (href) {
+                        const baseUrl = href,
                             regexp =
                         /url\(\s*(['"]?)(?![a-z]+:|\/\/)([^'")]+?)\1\s*\)/gi;
 
@@ -462,11 +491,17 @@ export class Exporting {
                     resultArray.push(cssText);
                 }
             }
-        } catch {
-            if (sheet.href) {
-                const newSheet = await Exporting.fetchCSS(sheet.href);
-                if (newSheet) {
-                    await Exporting.handleStyleSheet(newSheet, resultArray);
+        } catch (e: any) {
+            if (e.name === 'SecurityError' && href) {
+                try {
+                    const newSheet = await Exporting.fetchCSS(href);
+                    if (newSheet) {
+                        await Exporting.handleStyleSheet(
+                            newSheet, resultArray, visited
+                        );
+                    }
+                } catch {
+                    // Silently ignore network failures on fallback
                 }
             }
         }
