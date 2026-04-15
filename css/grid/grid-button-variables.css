@@ -104,7 +104,6 @@
             background: var(--ig-button-hover-color);
         }
 
-        &:hover:not(:disabled),
         &:hover:not(:disabled) {
             color: var(--ig-button-hover-color);
             background: var(--ig-button-hover-background);
